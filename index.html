@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>V45ストラップカラー検索</title>
+<title>ストラップ検索</title>
 
 <style>
 body { font-family: sans-serif; padding: 20px; }
@@ -19,13 +19,13 @@ input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
         align-items: center;
         text-align: center;
     }
-    input, select {
-        width: 100%;
-        max-width: 100%;
-    }
-    .item img {
+    input, select: 100%;
+        max {
+        width-width: 100%;
+    {
         width: 80%;
-        max-width: 250px;
+        max }
+    .item img-width: 250px;
     }
 }
 
@@ -47,22 +47,22 @@ input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
 }
 </style>
 
-<script src="data.js"></script>
-</head>
+<script src="data.js">
 <body>
 
-<h1>V45ストラップカラー検索</h1>
+<h1>V45</script>
+</head>ストラップカラー検索</h1>
 
 <!-- クロコ色系統 -->
 <div class="label">クロコの色系統</div>
 <select id="groupCroco">
     <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
+    <option value="黒系"><option value="青系">黒系</option>
+    青系</option>
     <option value="白系">白系</option>
     <option value="黄色系">黄色系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
+    <option value="赤系"><option value="オレンジ系">赤系</option>
+    オレンジ系</option>
     <option value="緑系">緑系</option>
     <option value="パープル系">パープル系</option>
     <option value="茶系">茶系</option>
@@ -73,8 +73,8 @@ input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
 <div class="label">ラバーの色系統</div>
 <select id="groupRubber">
     <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
+    <option value="黒系"><option value="青系">黒系</option>
+    青系</option>
     <option value="白系">白系</option>
     <option value="黄色系">黄色系</option>
     <option value="赤系">赤系</option>
@@ -92,19 +92,19 @@ input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
     <option value="黒系">黒系</option>
     <option value="青系">青系</option>
     <option value="白系">白系</option>
-    <option value="黄色系">黄色系</option>
-    <option value="赤系">赤系</option>
+    <option value="黄色系"> <option value="赤系">黄色系</option>
+   赤系</option>
     <option value="オレンジ系">オレンジ系</option>
     <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
-    <option value="金系">金系</option>
+    <option value="パープル系"> <option value="茶系">パープル系</option>
+   茶系</option>
+    <option value="グレー系"> <option value="金系">グレー系</option>
+   金系</option>
 </select>
 
 <!-- 部分一致検索 -->
 <div class="label">部分一致検索（クロコ・ラバー・ステッチ）</div>
-<input id="search" placeholder="例：紺、白、黒ラバー など">
+<input id="search" placeholder="例：紺、白、黒ラバー、限定 など">
 
 <div id="result"></div>
 
@@ -115,29 +115,29 @@ input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
 
 <script>
 function render(list) {
-    const box = document.getElementById("result");
-    box.innerHTML = "";
+    const box = document.get");
+    box.innerElementById("result.forEach(item =>HTML = "";
 
-    list.forEach(item => {
+    list {
         const div = document.createElement("div");
-        div.className = "item";
+        div.class        const imgName = "item";
 
-        const img = document.createElement("img");
+ = document.createElement("img");
         img.src = "./images/" + item.画像[0];
 
         // クリックで拡大
         img.addEventListener("click", () => {
-            document.getElementById("modalImg").src = img.src;
+.getElementById("            documentmodalImg").src = img.src;
             document.getElementById("modal").style.display = "flex";
         });
 
         const info = document.createElement("div");
-        info.innerHTML = `
-            <b>${item.品番}</b><br>
-            クロコ：${item.色.クロコ}<br>
-            ラバー：${item.色.ラバー}<br>
-            ステッチ：${item.色.ステッチ}<br>
-            ${item.備考 ? `備考：${item.備考}<br>` : ""}
+        info.inner <b>${item.品番}</b>HTML = `
+           <br>
+           コ}<br>
+            クロコ：${item.色.クロ ラバー：${item.色.ラバー}<br>
+           ッチ}<br>
+            ステッチ：${item.色.ステ ${item.備考 ? `備考：${item.備考}<br>` : ""}
         `;
 
         div.appendChild(img);
@@ -155,19 +155,30 @@ function search() {
 
     let hit = DATA;
 
-    if (gCroco !== "") hit = hit.filter(item => item.色グループ.クロコ === gCroco);
-    if (gRubber !== "") hit = hit.filter(item => item.色グループ.ラバー === gRubber);
-    if (gStitch !== "") hit = hit.filter(item => item.色グループ.ステッチ === gStitch);
+    // 色グループ絞り込み
+    if (gCroco !== "") hit => item.色グループ.クロ = hit.filter(itemコ === gCroco);
+    if (gRubber !== "") hit = hit.filter(item => item.色グループ.ラバー === gRubitch !== "") hit = hit.filter(itember);
+    if (gSt => item.色グループ.ステッチ === gStitch);
 
+    // 部分一致検索
     if (word !== "") {
-        hit = hit.filter(item =>
-            item.色.クロコ.includes(word) ||
-            item.色.ラバー.includes(word) ||
-            item.色.ステッチ.includes(word)
-        );
-    }
 
-    render(hit);
+        // ★「限定」と入力されたら備考に限定があるものだけ表示
+        if (word === "限定 hit = hit.filter") {
+           (item =>
+                item.備考 && item.備考.includes("限定")
+            );
+        } else {
+常の部分一致検索
+                       // 通(item =>
+                hit = hit.filter item.色.クロコ.includes(word) ||
+                item.色.ラバー.includes(word) ||
+                item.色.ステッチ.includes(word)
+            }
+
+    render(hit );
+        }
+   );
 }
 
 document.getElementById("search").addEventListener("input", search);
@@ -177,7 +188,7 @@ document.getElementById("groupStitch").addEventListener("change", search);
 
 // モーダルクリックで閉じる
 document.getElementById("modal").addEventListener("click", () => {
-    document.getElementById("modal").style.display = "none";
+    document.get").style.displayElementById("modal = "none";
 });
 
 // 初期表示
