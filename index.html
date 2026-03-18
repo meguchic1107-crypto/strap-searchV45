@@ -6,17 +6,17 @@
 <title>ストラップ検索</title>
 
 <style>
-body { font-family: sans-serif; padding: { padding: 8px; font-size: 16px 20px; }
-input, select; margin: 5px 0; width: 300px; }
+body { font-family: sans-serif; padding: 20px; }
+input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
 .item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; display: flex; gap: 20px; }
-.item img { width auto; cursor: pointer; }
-.label { font: 150px; height:-weight: bold; margin* スマホ最適化 */
-@media-top: 10px; }
+.item img { width: 150px; height: auto; cursor: pointer; }
+.label { font-weight: bold; margin-top: 10px; }
 
-/px) {
+/* スマホ最適化 */
+@media (max-width: 600px) {
     .item {
- (max-width: 600: column;
-               flex-direction align-items: center;
+        flex-direction: column;
+        align-items: center;
         text-align: center;
     }
     input, select {
@@ -29,15 +29,15 @@ input, select; margin: 5px 0; width: 300px; }
     }
 }
 
-/* 拡大画像モーダ display:none;
-   ル */
+/* 拡大画像モーダル */
 #modal {
+    display:none;
     position:fixed;
     top:0; left:0;
     width:100%; height:100%;
     background:rgba(0,0,0,0.7);
-   :center;
-    align justify-content-items:center;
+    justify-content:center;
+    align-items:center;
     z-index: 9999;
 }
 #modalImg {
@@ -54,13 +54,13 @@ input, select; margin: 5px 0; width: 300px; }
 <h1>V45ストラップカラー検索</h1>
 
 <!-- クロコ色系統 -->
-<div class="label">
-    <option value="">クロコの色系統</div>
-<select id="groupCroco">指定なし</option>
+<div class="label">クロコの色系統</div>
+<select id="groupCroco">
+    <option value="">指定なし</option>
     <option value="黒系">黒系</option>
     <option value="青系">青系</option>
-    <option value="白系"><option value="黄色系">白系</option>
-    黄色系</option>
+    <option value="白系">白系</option>
+    <option value="黄色系">黄色系</option>
     <option value="赤系">赤系</option>
     <option value="オレンジ系">オレンジ系</option>
     <option value="緑系">緑系</option>
@@ -70,9 +70,9 @@ input, select; margin: 5px 0; width: 300px; }
 </select>
 
 <!-- ラバー色系統 -->
-<div class="label">
-    <option value="">ラバーの色系統</div>
-<select id="groupRubber">指定なし</option>
+<div class="label">ラバーの色系統</div>
+<select id="groupRubber">
+    <option value="">指定なし</option>
     <option value="黒系">黒系</option>
     <option value="青系">青系</option>
     <option value="白系">白系</option>
@@ -84,12 +84,12 @@ input, select; margin: 5px 0; width: 300px; }
     <option value="茶系">茶系</option>
     <option value="グレー系">グレー系</option>
 </select>
-<div class="label">
 
-<!-- ステッチ色系統 -->ステッチの色系統</div>
-<select id="groupStitch">指定なし</option>
-   
-    <option value=""> <option value="黒系">黒系</option>
+<!-- ステッチ色系統 -->
+<div class="label">ステッチの色系統</div>
+<select id="groupStitch">
+    <option value="">指定なし</option>
+    <option value="黒系">黒系</option>
     <option value="青系">青系</option>
     <option value="白系">白系</option>
     <option value="黄色系">黄色系</option>
@@ -99,8 +99,8 @@ input, select; margin: 5px 0; width: 300px; }
     <option value="パープル系">パープル系</option>
     <option value="茶系">茶系</option>
     <option value="グレー系">グレー系</option>
-   金系</option>
-</select> <option value="金系">
+    <option value="金系">金系</option>
+</select>
 
 <!-- 部分一致検索 -->
 <div class="label">部分一致検索（クロコ・ラバー・ステッチ）</div>
@@ -111,38 +111,37 @@ input, select; margin: 5px 0; width: 300px; }
 <!-- 拡大画像モーダル -->
 <div id="modal">
     <img id="modalImg">
-function render(list) {
-    const box = document.get
 </div>
 
-<script>ElementById("resultHTML = "";
+<script>
+function render(list) {
+    const box = document.getElementById("result");
+    box.innerHTML = "";
 
-    list");
-    box.inner.forEach(item => {
-        constElement("div");
- div = document.create        div.className = "item";
+    list.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "item";
 
-        const img = document.create        img.src =Element("img");
- "./images/" + item.画像[0];
+        const img = document.createElement("img");
+        img.src = "./images/" + item.画像[0];
 
-        // クリックで拡大
         img.addEventListener("click", () => {
-            documentmodalImg").src =.getElementById(" document.getElement img.src;
-           ById("modal").style.display = "flex";
+            document.getElementById("modalImg").src = img.src;
+            document.getElementById("modal").style.display = "flex";
         });
 
         const info = document.createElement("div");
         info.innerHTML = `
-            <b>${item.品番}</b> クロコ：${item.色.クロ<br>
-           コ}<br>
+            <b>${item.品番}</b><br>
+            クロコ：${item.色.クロコ}<br>
             ラバー：${item.色.ラバー}<br>
             ステッチ：${item.色.ステッチ}<br>
             ${item.備考 ? `備考：${item.備考}<br>` : ""}
-        `Child(img);
-       ;
+        `;
 
-        div.append div.appendChild.appendChild(div(info);
-        box);
+        div.appendChild(img);
+        div.appendChild(info);
+        box.appendChild(div);
     });
 }
 
@@ -151,38 +150,34 @@ function search() {
 
     const gCroco  = document.getElementById("groupCroco").value;
     const gRubber = document.getElementById("groupRubber").value;
-    const gStitch = documentgroupStitch").value.getElementById(";
+    const gStitch = document.getElementById("groupStitch").value;
 
     let hit = DATA;
 
-    // 色グループ絞り込み
     if (gCroco !== "") hit = hit.filter(item => item.色グループ.クロコ === gCroco);
-    if (gRubber !== "") hit = hit.filter(item => item.色グループ.ラバー === gRubitch !== "") hit = hit.filter(itember);
-    if (gSt => item.色グループ.ステッチ === gStitch);
+    if (gRubber !== "") hit = hit.filter(item => item.色グループ.ラバー === gRubber);
+    if (gStitch !== "") hit = hit.filter(item => item.色グループ.ステッチ === gStitch);
 
-    // 部分一致検索（元の仕様）
     if (word !== "") {
         hit = hit.filter(item =>
             item.色.クロコ.includes(word) ||
             item.色.ラバー.includes(word) ||
-            item.色.ステッチ.includes    }
-
-    render(word)
+            item.色.ステッチ.includes(word)
         );
-(hit);
+    }
+
+    render(hit);
 }
 
-document.getElementById("Listener("input",search").addEvent search);
+document.getElementById("search").addEventListener("input", search);
 document.getElementById("groupCroco").addEventListener("change", search);
-document.getElementById("groupRubber").add", search);
-documentEventListener("change.getElementById("groupStitch").add", search);
+document.getElementById("groupRubber").addEventListener("change", search);
+document.getElementById("groupStitch").addEventListener("change", search);
 
-// モEventListener("changeーダルクリックで閉じる
-documentmodal").addEvent.getElementById("Listener("click", () => {
+document.getElementById("modal").addEventListener("click", () => {
     document.getElementById("modal").style.display = "none";
 });
 
-// 初期表示
 render(DATA);
 </script>
 
