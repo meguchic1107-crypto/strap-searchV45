@@ -1,185 +1,209 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>ストラップ検索</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ストラップ検索</title>
 
-<style>
-body { font-family: sans-serif; padding: 20px; }
-input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
-.item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; display: flex; gap: 20px; }
-.item img { width: 150px; height: auto; cursor: pointer; }
-.label { font-weight: bold; margin-top: 10px; }
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    input, select { padding: 8px; font-size: 16px; margin: 5px 0; width: 300px; }
+    .item { border: 1px solid #ccc; padding: 10px; margin: 10px 0; display: flex; gap: 20px; }
+    .item img { width: 150px; height: auto; cursor: pointer; }
+    .label { font-weight: bold; margin-top: 10px; }
 
-/* スマホ最適化 */
-@media (max-width: 600px) {
-    .item {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
+    @media (max-width: 600px) {
+      .item { flex-direction: column; align-items: center; text-align: center; }
+      input, select { width: 100%; }
+      .item img { width: 80%; max-width: 250px; }
     }
-    input, select {
-        width: 100%;
-        max-width: 100%;
-    }
-    .item img {
-        width: 80%;
-        max-width: 250px;
-    }
-}
 
-/* 拡大画像モーダル */
-#modal {
-    display:none;
-    position:fixed;
-    top:0; left:0;
-    width:100%; height:100%;
-    background:rgba(0,0,0,0.7);
-    justify-content:center;
-    align-items:center;
-    z-index: 9999;
-}
-#modalImg {
-    max-width:90%;
-    max-height:90%;
-    border:5px solid white;
-}
-</style>
+    #modal {
+      display:none;
+      position:fixed;
+      top:0; left:0;
+      width:100%; height:100%;
+      background:rgba(0,0,0,0.7);
+      justify-content:center;
+      align-items:center;
+      z-index:9999;
+    }
+    #modalImg {
+      max-width:90%;
+      max-height:90%;
+      border:5px solid white;
+    }
+  </style>
 
-<script src="data.js"></script>
+  <!-- ★★★★★ ここが超重要：正しい script タグ ★★★★★ -->
+  <script src="data.js"></script>
 </head>
-<body>
 
+<body>
 <h1>V45ストラップカラー検索</h1>
 
-<!-- クロコ色系統 -->
-<div class="label">クロコの色系統</div>
-<select id="groupCroco">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄色系">黄色系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
+<!-- 素材カテゴリ -->
+<div class="label">素材カテゴリ</div>
+<select id="category">
+  <option value="">指定なし</option>
+  <option value="CROCORUBBER">CROCORUBBER</option>
+  <option value="CALFRUBBER">CALFRUBBER</option>
+  <option value="SUEDERUBBER">SUEDERUBBER</option>
+  <option value="FABRICRUBBER">FABRICRUBBER</option>
+  <option value="CAUCHU">CAUCHU</option>
 </select>
 
-<!-- ラバー色系統 -->
-<div class="label">ラバーの色系統</div>
-<select id="groupRubber">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄色系">黄色系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
+<!-- 素材1（表） -->
+<div class="label">素材1（表）の色系統</div>
+<select id="groupMaterial1">
+  <option value="">指定なし</option>
+  <option value="黒系">黒系</option>
+  <option value="青系">青系</option>
+  <option value="白系">白系</option>
+  <option value="黄系">黄系</option>
+  <option value="赤系">赤系</option>
+  <option value="オレンジ系">オレンジ系</option>
+  <option value="緑系">緑系</option>
+  <option value="パープル系">パープル系</option>
+  <option value="茶系">茶系</option>
+  <option value="グレー系">グレー系</option>
 </select>
 
-<!-- ステッチ色系統 -->
+<!-- 素材2（裏） -->
+<div class="label">素材2（裏）の色系統</div>
+<select id="groupMaterial2">
+  <option value="">指定なし</option>
+  <option value="黒系">黒系</option>
+  <option value="青系">青系</option>
+  <option value="白系">白系</option>
+  <option value="黄系">黄系</option>
+  <option value="赤系">赤系</option>
+  <option value="オレンジ系">オレンジ系</option>
+  <option value="緑系">緑系</option>
+  <option value="パープル系">パープル系</option>
+  <option value="茶系">茶系</option>
+  <option value="グレー系">グレー系</option>
+</select>
+
+<!-- ステッチ -->
 <div class="label">ステッチの色系統</div>
 <select id="groupStitch">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄色系">黄色系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
-    <option value="金系">金系</option>
+  <option value="">指定なし</option>
+  <option value="黒系">黒系</option>
+  <option value="青系">青系</option>
+  <option value="白系">白系</option>
+  <option value="黄系">黄系</option>
+  <option value="赤系">赤系</option>
+  <option value="オレンジ系">オレンジ系</option>
+  <option value="緑系">緑系</option>
+  <option value="パープル系">パープル系</option>
+  <option value="茶系">茶系</option>
+  <option value="グレー系">グレー系</option>
+  <option value="金系">金系</option>
 </select>
 
-<!-- 部分一致検索 -->
-<div class="label">部分一致検索（クロコ・ラバー・ステッチ）</div>
-<input id="search" placeholder="例：紺、白、黒ラバー など">
+<!-- 部分一致 -->
+<div class="label">部分一致検索（素材1・素材2・ステッチ・備考）</div>
+<input id="search" placeholder="例：限定、マリナー用、在庫外 など">
 
 <div id="result"></div>
 
-<!-- 拡大画像モーダル -->
 <div id="modal">
-    <img id="modalImg">
+  <img id="modalImg">
 </div>
 
 <script>
-function render(list) {
-    const box = document.getElementById("result");
-    box.innerHTML = "";
+(() => {
+  const elSearch = document.getElementById("search");
+  const elCategory = document.getElementById("category");
+  const elMat1 = document.getElementById("groupMaterial1");
+  const elMat2 = document.getElementById("groupMaterial2");
+  const elStitch = document.getElementById("groupStitch");
+  const elResult = document.getElementById("result");
+  const elModal = document.getElementById("modal");
+  const elModalImg = document.getElementById("modalImg");
+
+  function updateStitchAvailability() {
+    const isCauchu = elCategory.value === "CAUCHU";
+    elStitch.disabled = isCauchu;
+    if (isCauchu) elStitch.value = "";
+  }
+
+  function render(list) {
+    elResult.innerHTML = "";
 
     list.forEach(item => {
-        const div = document.createElement("div");
-        div.className = "item";
+      const div = document.createElement("div");
+      div.className = "item";
 
-        const img = document.createElement("img");
-        img.src = "./images/" + item.画像[0];
+      const img = document.createElement("img");
+      img.src = "./images/" + item.画像[0];
 
-        img.addEventListener("click", () => {
-            document.getElementById("modalImg").src = img.src;
-            document.getElementById("modal").style.display = "flex";
-        });
+      img.addEventListener("click", () => {
+        elModalImg.src = img.src;
+        elModal.style.display = "flex";
+      });
 
-        const info = document.createElement("div");
-        info.innerHTML = `
-            <b>${item.品番}</b><br>
-            クロコ：${item.色.クロコ}<br>
-            ラバー：${item.色.ラバー}<br>
-            ステッチ：${item.色.ステッチ}<br>
-            ${item.備考 ? `備考：${item.備考}<br>` : ""}
-        `;
+      const stitchText =
+        (item.カテゴリ === "CAUCHU" || !item.色.ステッチ) ? "なし" : item.色.ステッチ;
 
-        div.appendChild(img);
-        div.appendChild(info);
-        box.appendChild(div);
+      const info = document.createElement("div");
+      info.innerHTML = `
+        <b>${item.品番}</b><br>
+        素材1（表）：${item.色.素材1}<br>
+        素材2（裏）：${item.色.素材2}<br>
+        ステッチ：${stitchText}<br>
+        ${item.備考 ? `備考：${item.備考}<br>` : ""}
+      `;
+
+      div.appendChild(img);
+      div.appendChild(info);
+      elResult.appendChild(div);
     });
-}
+  }
 
-function search() {
-    const word = document.getElementById("search").value;
-
-    const gCroco  = document.getElementById("groupCroco").value;
-    const gRubber = document.getElementById("groupRubber").value;
-    const gStitch = document.getElementById("groupStitch").value;
-
+  function search() {
     let hit = DATA;
 
-    if (gCroco !== "") hit = hit.filter(item => item.色グループ.クロコ === gCroco);
-    if (gRubber !== "") hit = hit.filter(item => item.色グループ.ラバー === gRubber);
-    if (gStitch !== "") hit = hit.filter(item => item.色グループ.ステッチ === gStitch);
+    if (elCategory.value !== "")
+      hit = hit.filter(i => i.カテゴリ === elCategory.value);
 
-    if (word !== "") {
-        hit = hit.filter(item =>
-            item.色.クロコ.includes(word) ||
-            item.色.ラバー.includes(word) ||
-            item.色.ステッチ.includes(word)
-        );
+    if (elMat1.value !== "")
+      hit = hit.filter(i => i.色グループ.素材1 === elMat1.value);
+
+    if (elMat2.value !== "")
+      hit = hit.filter(i => i.色グループ.素材2 === elMat2.value);
+
+    if (elStitch.value !== "")
+      hit = hit.filter(i => i.色グループ.ステッチ === elStitch.value);
+
+    if (elSearch.value.trim() !== "") {
+      const w = elSearch.value.trim();
+      hit = hit.filter(i =>
+        i.色.素材1.includes(w) ||
+        i.色.素材2.includes(w) ||
+        (i.色.ステッチ && i.色.ステッチ.includes(w)) ||
+        (i.備考 && i.備考.includes(w))
+      );
     }
 
     render(hit);
-}
+  }
 
-document.getElementById("search").addEventListener("input", search);
-document.getElementById("groupCroco").addEventListener("change", search);
-document.getElementById("groupRubber").addEventListener("change", search);
-document.getElementById("groupStitch").addEventListener("change", search);
+  elSearch.addEventListener("input", search);
+  elCategory.addEventListener("change", () => {
+    updateStitchAvailability();
+    search();
+  });
+  elMat1.addEventListener("change", search);
+  elMat2.addEventListener("change", search);
+  elStitch.addEventListener("change", search);
 
-document.getElementById("modal").addEventListener("click", () => {
-    document.getElementById("modal").style.display = "none";
-});
+  elModal.addEventListener("click", () => elModal.style.display = "none");
 
-render(DATA);
+  updateStitchAvailability();
+  render(DATA);
+})();
 </script>
-
 </body>
 </html>
