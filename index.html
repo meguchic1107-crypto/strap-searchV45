@@ -210,7 +210,7 @@
         素材1（表）：${item.色.素材1}<br>
         素材2（裏）：${item.色.素材2}<br>
         ステッチ：${stitchText}<br>
-        ${item.備考 ? `備考：${item.備考}<br>` : ""}
+       ${item.備考 ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>` : ""}
       `;
 
       div.appendChild(img);
