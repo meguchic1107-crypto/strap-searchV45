@@ -204,14 +204,16 @@
           ? "なし"
           : item.色.ステッチ;
 
-      const info = document.createElement("div");
-      info.innerHTML = `
-        <b>${item.品番}</b><br>
-        素材1（表）：${item.色.素材1}<br>
-        素材2（裏）：${item.色.素材2}<br>
-        ステッチ：${stitchText}<br>
-       ${item.備考 ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>` : ""}
-      `;
+     
+const info = document.createElement("div");
+info.innerHTML = `
+  <b>${item.品番}</b><br>
+  素材1（表）：${item.色.素材1}<br>
+  素材2（裏）：${item.色.素材2}<br>
+  ステッチ：${stitchText}<br>
+  ${item.備考 ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>` : ""}
+`;
+
 
       div.appendChild(img);
       div.appendChild(info);
