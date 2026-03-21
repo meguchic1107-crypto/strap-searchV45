@@ -11,19 +11,18 @@
       padding: 20px;
     }
 
-    /* ✅ タイトル：スマホで改行させない */
-    
-.title {
-  white-space: nowrap;
-  text-align: center;
-}
+    /* ===== タイトル ===== */
+    .title {
+      white-space: nowrap;
+      text-align: center;
+    }
 
-.title::before,
-.title::after {
-  content: "★";
-  color: #d4af37;
-  margin: 0 8px;
-}
+    .title::before,
+    .title::after {
+      content: "★";
+      color: #d4af37;
+      margin: 0 8px;
+    }
 
     @media (max-width: 600px) {
       .title {
@@ -31,6 +30,22 @@
       }
     }
 
+    /* ===== 注意書き（赤） ===== */
+    .notice {
+      margin: 10px 0 20px;
+      padding: 10px;
+      border: 1px solid #e53935;
+      background: #fff5f5;
+      color: #c62828;
+      font-size: 14px;
+      border-radius: 6px;
+    }
+
+    .notice div {
+      margin: 2px 0;
+    }
+
+    /* ===== フォーム ===== */
     input, select {
       padding: 8px;
       font-size: 16px;
@@ -43,6 +58,7 @@
       margin-top: 10px;
     }
 
+    /* ===== アイテム表示 ===== */
     .item {
       border: 1px solid #ccc;
       padding: 10px;
@@ -74,7 +90,7 @@
       }
     }
 
-    /* モーダル */
+    /* ===== モーダル ===== */
     #modal {
       display: none;
       position: fixed;
@@ -92,13 +108,18 @@
     }
   </style>
 
-  <!-- ✅ data.js（キャッシュ対策） -->
+  <!-- data.js -->
   <script src="data.js?v=20260320"></script>
 </head>
 
 <body>
 
 <h1 class="title">V45ストラップカラー検索</h1>
+
+<div class="notice">
+  <div>注意1：在庫のないカラーがある場合があります</div>
+  <div>注意2：色見本の参考にしてください</div>
+</div>
 
 <div class="label">素材カテゴリ</div>
 <select id="category">
@@ -161,7 +182,6 @@
 
 <div id="result"></div>
 
-<!-- モーダル -->
 <div id="modal">
   <img id="modalImg">
 </div>
@@ -204,16 +224,14 @@
           ? "なし"
           : item.色.ステッチ;
 
-     
-const info = document.createElement("div");
-info.innerHTML = `
-  <b>${item.品番}</b><br>
-  素材1（表）：${item.色.素材1}<br>
-  素材2（裏）：${item.色.素材2}<br>
-  ステッチ：${stitchText}<br>
-  ${item.備考 ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>` : ""}
-`;
-
+      const info = document.createElement("div");
+      info.innerHTML = `
+        <b>${item.品番}</b><br>
+        素材1（表）：${item.色.素材1}<br>
+        素材2（裏）：${item.色.素材2}<br>
+        ステッチ：${stitchText}<br>
+        ${item.備考 ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>` : ""}
+      `;
 
       div.appendChild(img);
       div.appendChild(info);
@@ -226,13 +244,10 @@ info.innerHTML = `
 
     if (elCategory.value)
       hit = hit.filter(i => i.カテゴリ === elCategory.value);
-
     if (elMat1.value)
       hit = hit.filter(i => i.色グループ.素材1 === elMat1.value);
-
     if (elMat2.value)
       hit = hit.filter(i => i.色グループ.素材2 === elMat2.value);
-
     if (elStitch.value)
       hit = hit.filter(i => i.色グループ.ステッチ === elStitch.value);
 
@@ -254,7 +269,6 @@ info.innerHTML = `
   elMat1.onchange = search;
   elMat2.onchange = search;
   elStitch.onchange = search;
-
   elModal.onclick = () => elModal.style.display = "none";
 
   updateStitchAvailability();
