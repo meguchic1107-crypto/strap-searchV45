@@ -27,16 +27,15 @@
     }
 
     /* ===== 注意書き（青） ===== */
-    
-.notice {
-  margin: 10px 0 20px;
-  padding: 10px;
-  border: 1px solid #1e88e5;
-  background: #e3f2fd;
-  color: #1565c0;
-  font-size: 14px;
-  border-radius: 6px;
-}
+    .notice {
+      margin: 10px 0 20px;
+      padding: 10px;
+      border: 1px solid #1e88e5;
+      background: #e3f2fd;
+      color: #1565c0;
+      font-size: 14px;
+      border-radius: 6px;
+    }
     .notice div { margin: 2px 0; }
 
     /* ===== 入力UI ===== */
@@ -186,7 +185,6 @@
   <div class="label">部分一致検索（素材1・素材2・ステッチ・備考）</div>
   <input id="search" placeholder="例：限定、マリナー用、在庫外 など">
 
-  <!-- ✅ リセット + 件数 -->
   <div class="controls">
     <button id="resetBtn" type="button">条件リセット</button>
     <div id="count" class="count"></div>
@@ -194,9 +192,8 @@
 
   <div id="result"></div>
 
-  <!-- モーダル -->
   <div id="modal">
-    <img id="modalImg">
+    <img id="modalImg" alt="">
   </div>
 
   <script>
@@ -239,7 +236,7 @@
             ? "なし"
             : item.色.ステッチ;
 
-        // ✅ 備考の「※」の前で改行（表示だけ）
+        // ✅ 完全修正：備考の「※」を本物の <br> で改行（&lt;br&gt; ではなく <br>）
         const noteHtml = item.備考
           ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>`
           : "";
@@ -306,7 +303,6 @@
     elMat1.onchange = search;
     elMat2.onchange = search;
     elStitch.onchange = search;
-
     elReset.onclick = resetConditions;
     elModal.onclick = () => elModal.style.display = "none";
 
