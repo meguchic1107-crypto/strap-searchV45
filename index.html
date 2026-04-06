@@ -166,6 +166,13 @@
     <option value="グレー系">グレー系</option>
   </select>
 
+  <!-- ✅ 追加：素材2（裏）の素材名（カーフ/ラバー等） -->
+  <div class="label">素材2（裏）の素材名（カーフ/ラバー等）</div>
+  <select id="material2Name">
+    <option value="">指定なし</option>
+    <!-- JSで DATA から自動生成 -->
+  </select>
+
   <div class="label">ステッチの色系統</div>
   <select id="groupStitch">
     <option value="">指定なし</option>
@@ -202,6 +209,7 @@
     const elCategory = document.getElementById("category");
     const elMat1     = document.getElementById("groupMaterial1");
     const elMat2     = document.getElementById("groupMaterial2");
+    const elMat2Name = document.getElementById("material2Name"); // ✅ 追加
     const elStitch   = document.getElementById("groupStitch");
     const elResult   = document.getElementById("result");
     const elModal    = document.getElementById("modal");
@@ -209,10 +217,51 @@
     const elReset    = document.getElementById("resetBtn");
     const elCount    = document.getElementById("count");
 
-    function updateStitchAvailability() {
+    function updateAvailabilityByCategory() {
       const isCauchu = elCategory.value === "CAUCHU";
+
+      // CAUCHUはステッチや素材名が空前提なので無効化
       elStitch.disabled = isCauchu;
       if (isCauchu) elStitch.value = "";
+
+      elMat2Name.disabled = isCauchu;
+      if (isCauchu) elMat2Name.value = "";
+    }
+
+    // ✅ 素材2（裏）の「素材名」候補を DATA から自動生成
+    function rebuildMaterial2NameOptions() {
+      const current = elMat2Name.value;
+      const isCauchu = elCategory.value === "CAUCHU";
+
+      // いったんクリア（先頭の「指定なし」は残す）
+      elMat2Name.innerHTML = `<option value="">指定なし</option>`;
+
+      if (isCauchu) return;
+
+      // カテゴリ指定がある場合は、そのカテゴリ内で候補生成
+      const base = elCategory.value
+        ? DATA.filter(i => i.カテゴリ === elCategory.value)
+        : DATA;
+
+      // 色がないデータもあり得るのでガードしつつ、素材2のユニーク集合を作る
+      const set = new Set();
+      base.forEach(i => {
+        const v = i && i.色 && typeof i.色.素材2 === "string" ? i.色.素材2.trim() : "";
+        if (v) set.add(v);
+      });
+
+      const list = Array.from(set).sort((a, b) => a.localeCompare(b, "ja"));
+
+      list.forEach(v => {
+        const opt = document.createElement("option");
+        opt.value = v;
+        opt.textContent = v;
+        elMat2Name.appendChild(opt);
+      });
+
+      // なるべく選択状態を維持（候補に無ければクリア）
+      if (current && set.has(current)) elMat2Name.value = current;
+      else elMat2Name.value = "";
     }
 
     function render(list) {
@@ -236,9 +285,9 @@
             ? "なし"
             : item.色.ステッチ;
 
-        // ✅ 完全修正：備考の「※」を本物の <br> で改行（&lt;br&gt; ではなく <br>）
+        // ✅ 備考の「※」を本物の <br> で改行
         const noteHtml = item.備考
-          ? `備考：${item.備考.replace(/※/g, "<br>※")}<br>`
+          ? `備考：${String(item.備考).replace(/※/g, "<br>※")}<br>`
           : "";
 
         const info = document.createElement("div");
@@ -261,19 +310,26 @@
 
       if (elCategory.value)
         hit = hit.filter(i => i.カテゴリ === elCategory.value);
+
       if (elMat1.value)
         hit = hit.filter(i => i.色グループ.素材1 === elMat1.value);
+
       if (elMat2.value)
         hit = hit.filter(i => i.色グループ.素材2 === elMat2.value);
+
+      // ✅ 追加：素材2（裏）の素材名（完全一致）
+      if (elMat2Name.value)
+        hit = hit.filter(i => i && i.色 && i.色.素材2 === elMat2Name.value);
+
       if (elStitch.value)
         hit = hit.filter(i => i.色グループ.ステッチ === elStitch.value);
 
       if (elSearch.value.trim()) {
         const w = elSearch.value.trim();
         hit = hit.filter(i =>
-          i.色.素材1.includes(w) ||
-          i.色.素材2.includes(w) ||
-          (i.色.ステッチ && i.色.ステッチ.includes(w)) ||
+          (i.色 && i.色.素材1 && i.色.素材1.includes(w)) ||
+          (i.色 && i.色.素材2 && i.色.素材2.includes(w)) ||
+          (i.色 && i.色.ステッチ && i.色.ステッチ.includes(w)) ||
           (i.備考 && i.備考.includes(w))
         );
       }
@@ -291,23 +347,35 @@
       elCategory.value = "";
       elMat1.value = "";
       elMat2.value = "";
+      elMat2Name.value = ""; // ✅ 追加
       elStitch.value = "";
       elSearch.value = "";
-      updateStitchAvailability();
+
+      updateAvailabilityByCategory();
+      rebuildMaterial2NameOptions();
       search();
     }
 
     // イベント
     elSearch.oninput = search;
-    elCategory.onchange = () => { updateStitchAvailability(); search(); };
+
+    elCategory.onchange = () => {
+      updateAvailabilityByCategory();
+      rebuildMaterial2NameOptions(); // ✅ カテゴリに応じて素材2素材名候補を作り直す
+      search();
+    };
+
     elMat1.onchange = search;
     elMat2.onchange = search;
+    elMat2Name.onchange = search; // ✅ 追加
     elStitch.onchange = search;
+
     elReset.onclick = resetConditions;
     elModal.onclick = () => elModal.style.display = "none";
 
     // 初期表示
-    updateStitchAvailability();
+    updateAvailabilityByCategory();
+    rebuildMaterial2NameOptions();
     search();
   })();
   </script>
