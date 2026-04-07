@@ -61,16 +61,30 @@ input,select { padding:8px; font-size:16px; width:300px; }
 .palette.disabled { pointer-events:none; opacity:0.4; }
 
 /* ===== 結果 ===== */
-.item { border:1px solid #ccc; padding:10px; margin:10px 0; display:flex; gap:20px; }
+.item {
+  border:1px solid #ccc;
+  padding:10px;
+  margin:10px 0;
+  display:flex;
+  gap:20px;
+}
 .item img { width:150px; cursor:pointer; }
+.note { font-size:13px; color:#555; }
 
 /* ===== モーダル ===== */
 #modal {
-  display:none; position:fixed; inset:0;
+  display:none;
+  position:fixed;
+  inset:0;
   background:rgba(0,0,0,.7);
-  justify-content:center; align-items:center;
+  justify-content:center;
+  align-items:center;
 }
-#modalImg { max-width:90%; max-height:90%; border:5px solid #fff; }
+#modalImg {
+  max-width:90%;
+  max-height:90%;
+  border:5px solid #fff;
+}
 
 @media(max-width:600px){
   input,select{width:100%}
@@ -158,12 +172,12 @@ input,select { padding:8px; font-size:16px; width:300px; }
       p.classList.add("disabled");
       h.value="";
       p.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
-    }else p.classList.remove("disabled");
+    }else{
+      p.classList.remove("disabled");
+    }
   }
 
-  function includesMatch(v,target){
-    return typeof v==="string" && v.includes(target);
-  }
+  const includesMatch=(v,t)=>typeof v==="string" && v.includes(t);
 
   function search(){
     let hit=DATA;
@@ -180,29 +194,39 @@ input,select { padding:8px; font-size:16px; width:300px; }
     if(el("groupStitch").value)
       hit=hit.filter(i=>includesMatch(i.色グループ.ステッチ,el("groupStitch").value));
 
-    if(el("search").value)
+    if(el("search").value.trim()){
+      const w=el("search").value.trim();
       hit=hit.filter(i=>
-        i.色.素材1.includes(el("search").value) ||
-        i.色.素材2.includes(el("search").value) ||
-        (i.色.ステッチ && i.色.ステッチ.includes(el("search").value)) ||
-        (i.備考 && i.備考.includes(el("search").value))
+        i.色.素材1.includes(w) ||
+        i.色.素材2.includes(w) ||
+        (i.色.ステッチ && i.色.ステッチ.includes(w)) ||
+        (i.備考 && i.備考.includes(w))
       );
+    }
 
     el("count").textContent=`検索結果：${hit.length} 件`;
-    el("result").innerHTML=hit.map(i=>`
-      <div class="item">
-        <img src="./images/${i.画像[0]}" onclick="openModal('${i.画像[0]}')">
-        <div>
-          <b>${i.品番}</b><br>
-          表：${i.色.素材1}<br>
-          裏：${i.色.素材2}<br>
-          ステッチ：${i.色.ステッチ||"なし"}
+
+    el("result").innerHTML = hit.map(i=>{
+      const noteHtml = i.備考
+        ? `<div class="note">備考：${String(i.備考).replace(/※/g,"<br>※")}</div>`
+        : "";
+
+      return `
+        <div class="item">
+          <img src="./images/${i.画像[0]}" onclick="openModal('${i.画像[0]}')">
+          <div>
+            <b>${i.品番}</b><br>
+            表：${i.色.素材1}<br>
+            裏：${i.色.素材2}<br>
+            ステッチ：${i.色.ステッチ || "なし"}<br>
+            ${noteHtml}
+          </div>
         </div>
-      </div>
-    `).join("");
+      `;
+    }).join("");
   }
 
-  window.openModal=src=>{
+  window.openModal = src => {
     el("modalImg").src="./images/"+src;
     el("modal").style.display="flex";
   };
@@ -218,3 +242,4 @@ input,select { padding:8px; font-size:16px; width:300px; }
 
 </body>
 </html>
+``
