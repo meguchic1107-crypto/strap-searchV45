@@ -7,9 +7,11 @@
 
 <style>
 body { font-family:sans-serif; padding:20px; }
+
 .title { text-align:center; white-space:nowrap; }
 .title::before,.title::after { content:"★"; color:#d4af37; margin:0 8px; }
 
+/* ===== 注意文 ===== */
 .notice {
   margin:10px 0 20px;
   padding:12px;
@@ -22,6 +24,7 @@ body { font-family:sans-serif; padding:20px; }
 }
 .notice-sub { padding-left:2em; }
 
+/* ===== UI ===== */
 .label { font-weight:bold; margin-top:14px; }
 .label-note { font-size:12px; color:#666; margin-left:6px; }
 
@@ -36,6 +39,7 @@ input,select { padding:8px; font-size:16px; width:300px; }
   cursor:pointer;
 }
 
+/* ===== パレット ===== */
 .palette { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 16px; }
 .color-chip {
   width:34px; height:34px;
@@ -45,6 +49,7 @@ input,select { padding:8px; font-size:16px; width:300px; }
 }
 .color-chip.selected { border:3px solid #000; }
 
+/* ===== 色 ===== */
 .color-黒系{background:#000}
 .color-青系{background:#1976d2}
 .color-白系{background:#fff;border:2px solid #999}
@@ -56,13 +61,30 @@ input,select { padding:8px; font-size:16px; width:300px; }
 .color-茶系{background:#6d4c41}
 .color-グレー系{background:#9e9e9e}
 
+/* ===== 金系（メタリック） ===== */
 .color-金系{
   background:
-    radial-gradient(circle at 30% 30%, #fff9d6 0%, rgba(255,249,214,.9) 18%, transparent 35%),
-    linear-gradient(135deg,#fff3b0,#f6d97a,#d4af37,#b8962e,#f6d97a,#fff3b0);
-  border:2px solid #8c7422;
+    radial-gradient(circle at 28% 25%,
+      rgba(255,255,255,.95) 0%,
+      rgba(255,255,255,.55) 12%,
+      rgba(255,255,255,0) 32%
+    ),
+    linear-gradient(135deg,
+      #fff7c7 0%,
+      #f7e27e 18%,
+      #d4af37 40%,
+      #b08a1e 55%,
+      #f7e27e 72%,
+      #fff1a6 100%
+    );
+  border:2px solid #7a5f12;
+  box-shadow:
+    inset 0 1px 2px rgba(255,255,255,.75),
+    inset 0 -2px 3px rgba(0,0,0,.25),
+    0 1px 3px rgba(0,0,0,.35);
 }
 
+/* ===== 結果 ===== */
 .item {
   border:1px solid #ccc;
   padding:10px;
@@ -73,6 +95,7 @@ input,select { padding:8px; font-size:16px; width:300px; }
 .item img { width:150px; cursor:pointer; }
 .note { font-size:13px; color:#555; }
 
+/* ===== モーダル ===== */
 #modal {
   display:none;
   position:fixed;
@@ -108,21 +131,21 @@ input,select { padding:8px; font-size:16px; width:300px; }
   <option value="CAUCHU">CAUCHU</option>
 </select>
 
-<div class="label">素材1（表）の色を選択</div>
+<div class="label">素材1（表）の色系統</div>
 <div class="palette" id="pMat1"></div>
 <input type="hidden" id="groupMaterial1">
 
-<div class="label">素材2（裏）の色を選択<span class="label-note">※茶カーフ(素材)含</span></div>
+<div class="label">素材2（裏）の色系統 <span class="label-note">※茶カーフ含</span></div>
 <div class="palette" id="pMat2"></div>
 <input type="hidden" id="groupMaterial2">
 
-<div class="label">ステッチの色を選択</div>
+<div class="label">ステッチの色系統</div>
 <div class="palette" id="pStitch"></div>
 <input type="hidden" id="groupStitch">
 
 <div class="label">部分一致検索</div>
 <div class="search-controls">
-  <input id="search" placeholder="例：GOLF用、限定、使用不可 など">
+  <input id="search" placeholder="例：GOLF用、限定、在庫外、使用不可 など">
   <button class="cancel-btn" id="cancelBtn">検索キャンセル</button>
 </div>
 
@@ -133,14 +156,16 @@ input,select { padding:8px; font-size:16px; width:300px; }
 
 <script>
 (() => {
-  const COLORS = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
+  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
+  const COLORS_STITCH = [...COLORS_MAIN, "金系"];
   const el = id => document.getElementById(id);
 
-  function build(pid, hid){
+  function build(pid, hid, colors){
     const box = el(pid), hidden = el(hid);
-    COLORS.forEach(c=>{
+    colors.forEach(c=>{
       const d = document.createElement("div");
       d.className = `color-chip color-${c}`;
+      d.title = c; // ✅ ホバーで色名表示
       d.onclick = () => {
         hidden.value = hidden.value === c ? "" : c;
         [...box.children].forEach(x=>x.classList.remove("selected"));
@@ -151,9 +176,9 @@ input,select { padding:8px; font-size:16px; width:300px; }
     });
   }
 
-  build("pMat1","groupMaterial1");
-  build("pMat2","groupMaterial2");
-  build("pStitch","groupStitch");
+  build("pMat1","groupMaterial1", COLORS_MAIN);
+  build("pMat2","groupMaterial2", COLORS_MAIN);
+  build("pStitch","groupStitch", COLORS_STITCH);
 
   function search(){
     let hit = DATA;
@@ -175,8 +200,8 @@ input,select { padding:8px; font-size:16px; width:300px; }
       hit = hit.filter(i =>
         i.色.素材1.includes(w) ||
         i.色.素材2.includes(w) ||
-        (i.色.ステッチ || "").includes(w) ||
-        (i.備考 || "").includes(w)
+        (i.色.ステッチ||"").includes(w) ||
+        (i.備考||"").includes(w)
       );
     }
 
