@@ -11,7 +11,7 @@
       padding: 20px;
     }
 
-    /* ===== タイトル（★装飾 + スマホで折り返し防止） ===== */
+    /* ===== タイトル ===== */
     .title {
       white-space: nowrap;
       text-align: center;
@@ -22,11 +22,8 @@
       color: #d4af37;
       margin: 0 8px;
     }
-    @media (max-width: 600px) {
-      .title { font-size: 20px; }
-    }
 
-    /* ===== 注意書き（青） ===== */
+    /* ===== 注意書き ===== */
     .notice {
       margin: 10px 0 20px;
       padding: 10px;
@@ -36,7 +33,6 @@
       font-size: 14px;
       border-radius: 6px;
     }
-    .notice div { margin: 2px 0; }
 
     /* ===== 入力UI ===== */
     input, select {
@@ -47,32 +43,49 @@
     }
     .label {
       font-weight: bold;
-      margin-top: 10px;
+      margin-top: 12px;
     }
 
-    /* ===== コントロール（リセット + 件数） ===== */
-    .controls {
+    /* ===== カラーパレット ===== */
+    .palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 8px 0 15px;
+    }
+    .color-chip {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid #ccc;
+      position: relative;
+    }
+    .color-chip.selected {
+      border: 3px solid #000;
+    }
+    .color-chip.selected::after {
+      content: "✓";
+      position: absolute;
+      inset: 0;
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin: 8px 0 15px;
-      flex-wrap: wrap;
-    }
-    #resetBtn {
-      padding: 6px 12px;
-      font-size: 14px;
-      cursor: pointer;
-      border: 1px solid #ccc;
-      background: #f5f5f5;
-      border-radius: 4px;
-    }
-    #resetBtn:hover { background: #e0e0e0; }
-    .count {
-      font-size: 14px;
-      color: #555;
+      justify-content: center;
+      font-weight: bold;
     }
 
-    /* ===== 検索結果アイテム ===== */
+    .color-黒系 { background:#000; }
+    .color-青系 { background:#1976d2; }
+    .color-白系 { background:#fff; border:2px solid #999; }
+    .color-黄系 { background:#fdd835; }
+    .color-赤系 { background:#d32f2f; }
+    .color-オレンジ系 { background:#f57c00; }
+    .color-緑系 { background:#388e3c; }
+    .color-パープル系 { background:#7b1fa2; }
+    .color-茶系 { background:#6d4c41; }
+    .color-グレー系 { background:#9e9e9e; }
+
+    /* ===== 結果 ===== */
     .item {
       border: 1px solid #ccc;
       padding: 10px;
@@ -82,18 +95,12 @@
     }
     .item img {
       width: 150px;
-      height: auto;
       cursor: pointer;
     }
 
     @media (max-width: 600px) {
-      .item {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-      }
       input, select { width: 100%; }
-      .item img { width: 80%; max-width: 250px; }
+      .item { flex-direction: column; align-items: center; }
     }
 
     /* ===== モーダル ===== */
@@ -104,7 +111,6 @@
       background: rgba(0,0,0,0.7);
       justify-content: center;
       align-items: center;
-      z-index: 9999;
     }
     #modalImg {
       max-width: 90%;
@@ -113,272 +119,147 @@
     }
   </style>
 
-  <!-- ✅ data.js（キャッシュ対策） -->
   <script src="data.js?v=20260320"></script>
 </head>
 
 <body>
 
-  <h1 class="title">V45ストラップカラー検索</h1>
+<h1 class="title">V45ストラップカラー検索</h1>
 
-  <div class="notice">
-    <div>注：在庫のないカラーがある場合があります</div>
-    <div>色見本の参考にしてください</div>
-  </div>
+<div class="notice">
+  <div>注：在庫のないカラーがある場合があります</div>
+  <div>色見本の参考にしてください</div>
+</div>
 
-  <div class="label">素材カテゴリ</div>
-  <select id="category">
-    <option value="">指定なし</option>
-    <option value="CROCORUBBER">CROCORUBBER</option>
-    <option value="CALFRUBBER">CALFRUBBER</option>
-    <option value="SUEDERUBBER">SUEDERUBBER</option>
-    <option value="FABRICRUBBER">FABRICRUBBER</option>
-    <option value="CAUCHU">CAUCHU</option>
-  </select>
+<div class="label">素材カテゴリ</div>
+<select id="category">
+  <option value="">指定なし</option>
+  <option value="CROCORUBBER">CROCORUBBER</option>
+  <option value="CALFRUBBER">CALFRUBBER</option>
+  <option value="SUEDERUBBER">SUEDERUBBER</option>
+  <option value="FABRICRUBBER">FABRICRUBBER</option>
+  <option value="CAUCHU">CAUCHU</option>
+</select>
 
-  <div class="label">素材1（表）の色系統</div>
-  <select id="groupMaterial1">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄系">黄系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
-  </select>
+<div class="label">素材1（表）の色系統</div>
+<div class="palette" id="paletteMaterial1"></div>
+<input type="hidden" id="groupMaterial1">
 
-  <div class="label">素材2（裏）の色系統</div>
-  <select id="groupMaterial2">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄系">黄系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
-  </select>
+<div class="label">素材2（裏）の色系統</div>
+<div class="palette" id="paletteMaterial2"></div>
+<input type="hidden" id="groupMaterial2">
 
-  <!-- ✅ 追加：素材2（裏）の素材名（カーフ/ラバー等） -->
-  <div class="label">素材2（裏）の素材名（カーフ/ラバー等）</div>
-  <select id="material2Name">
-    <option value="">指定なし</option>
-    <!-- JSで DATA から自動生成 -->
-  </select>
+<div class="label">素材2（裏）の素材名</div>
+<select id="material2Name">
+  <option value="">指定なし</option>
+  <option value="CROCO">CROCO</option>
+  <option value="CALF">CALF</option>
+  <option value="CAUCHU">CAUCHU</option>
+</select>
 
-  <div class="label">ステッチの色系統</div>
-  <select id="groupStitch">
-    <option value="">指定なし</option>
-    <option value="黒系">黒系</option>
-    <option value="青系">青系</option>
-    <option value="白系">白系</option>
-    <option value="黄系">黄系</option>
-    <option value="赤系">赤系</option>
-    <option value="オレンジ系">オレンジ系</option>
-    <option value="緑系">緑系</option>
-    <option value="パープル系">パープル系</option>
-    <option value="茶系">茶系</option>
-    <option value="グレー系">グレー系</option>
-    <option value="金系">金系</option>
-  </select>
+<div class="label">ステッチの色系統</div>
+<select id="groupStitch">
+  <option value="">指定なし</option>
+  <option value="黒系">黒系</option>
+  <option value="青系">青系</option>
+  <option value="白系">白系</option>
+  <option value="黄系">黄系</option>
+  <option value="赤系">赤系</option>
+  <option value="オレンジ系">オレンジ系</option>
+  <option value="緑系">緑系</option>
+  <option value="パープル系">パープル系</option>
+  <option value="茶系">茶系</option>
+  <option value="グレー系">グレー系</option>
+</select>
 
-  <div class="label">部分一致検索（素材1・素材2・ステッチ・備考）</div>
-  <input id="search" placeholder="例：限定、マリナー用、在庫外 など">
+<div class="label">部分一致検索</div>
+<input id="search">
 
-  <div class="controls">
-    <button id="resetBtn" type="button">条件リセット</button>
-    <div id="count" class="count"></div>
-  </div>
+<div id="count"></div>
+<div id="result"></div>
 
-  <div id="result"></div>
+<div id="modal"><img id="modalImg"></div>
 
-  <div id="modal">
-    <img id="modalImg" alt="">
-  </div>
+<script>
+(() => {
+  const COLORS = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
 
-  <script>
-  (() => {
-    const elSearch   = document.getElementById("search");
-    const elCategory = document.getElementById("category");
-    const elMat1     = document.getElementById("groupMaterial1");
-    const elMat2     = document.getElementById("groupMaterial2");
-    const elMat2Name = document.getElementById("material2Name"); // ✅ 追加
-    const elStitch   = document.getElementById("groupStitch");
-    const elResult   = document.getElementById("result");
-    const elModal    = document.getElementById("modal");
-    const elModalImg = document.getElementById("modalImg");
-    const elReset    = document.getElementById("resetBtn");
-    const elCount    = document.getElementById("count");
+  function buildPalette(containerId, hiddenId) {
+    const box = document.getElementById(containerId);
+    const hidden = document.getElementById(hiddenId);
 
-    function updateAvailabilityByCategory() {
-      const isCauchu = elCategory.value === "CAUCHU";
+    COLORS.forEach(c => {
+      const d = document.createElement("div");
+      d.className = `color-chip color-${c}`;
+      d.title = c;
+      d.onclick = () => {
+        if (hidden.value === c) {
+          hidden.value = "";
+          d.classList.remove("selected");
+        } else {
+          hidden.value = c;
+          [...box.children].forEach(x => x.classList.remove("selected"));
+          d.classList.add("selected");
+        }
+        search();
+      };
+      box.appendChild(d);
+    });
+  }
 
-      // CAUCHUはステッチや素材名が空前提なので無効化
-      elStitch.disabled = isCauchu;
-      if (isCauchu) elStitch.value = "";
+  buildPalette("paletteMaterial1","groupMaterial1");
+  buildPalette("paletteMaterial2","groupMaterial2");
 
-      elMat2Name.disabled = isCauchu;
-      if (isCauchu) elMat2Name.value = "";
-    }
+  const el = id => document.getElementById(id);
 
-    // ✅ 素材2（裏）の「素材名」候補を DATA から自動生成
-    function rebuildMaterial2NameOptions() {
-      const current = elMat2Name.value;
-      const isCauchu = elCategory.value === "CAUCHU";
+  function search() {
+    let hit = DATA;
 
-      // いったんクリア（先頭の「指定なし」は残す）
-      elMat2Name.innerHTML = `<option value="">指定なし</option>`;
+    if (el("category").value)
+      hit = hit.filter(i => i.カテゴリ === el("category").value);
 
-      if (isCauchu) return;
+    if (el("groupMaterial1").value)
+      hit = hit.filter(i => i.色グループ.素材1 === el("groupMaterial1").value);
 
-      // カテゴリ指定がある場合は、そのカテゴリ内で候補生成
-      const base = elCategory.value
-        ? DATA.filter(i => i.カテゴリ === elCategory.value)
-        : DATA;
+    if (el("groupMaterial2").value)
+      hit = hit.filter(i => i.色グループ.素材2 === el("groupMaterial2").value);
 
-      // 色がないデータもあり得るのでガードしつつ、素材2のユニーク集合を作る
-      const set = new Set();
-      base.forEach(i => {
-        const v = i && i.色 && typeof i.色.素材2 === "string" ? i.色.素材2.trim() : "";
-        if (v) set.add(v);
-      });
+    if (el("material2Name").value)
+      hit = hit.filter(i => i.色.素材2.includes(el("material2Name").value));
 
-      const list = Array.from(set).sort((a, b) => a.localeCompare(b, "ja"));
+    if (el("groupStitch").value)
+      hit = hit.filter(i => i.色グループ.ステッチ === el("groupStitch").value);
 
-      list.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v;
-        opt.textContent = v;
-        elMat2Name.appendChild(opt);
-      });
+    if (el("search").value)
+      hit = hit.filter(i =>
+        i.色.素材1.includes(el("search").value) ||
+        i.色.素材2.includes(el("search").value) ||
+        (i.備考 && i.備考.includes(el("search").value))
+      );
 
-      // なるべく選択状態を維持（候補に無ければクリア）
-      if (current && set.has(current)) elMat2Name.value = current;
-      else elMat2Name.value = "";
-    }
+    el("count").textContent = `検索結果：${hit.length} 件`;
+    el("result").innerHTML = hit.map(i =>
+      `<div class="item">
+        <img src="./images/${i.画像[0]}" onclick="modal('${i.画像[0]}')">
+        <div>
+          <b>${i.品番}</b><br>
+          表：${i.色.素材1}<br>
+          裏：${i.色.素材2}
+        </div>
+      </div>`
+    ).join("");
+  }
 
-    function render(list) {
-      elResult.innerHTML = "";
+  window.modal = src => {
+    el("modalImg").src = "./images/" + src;
+    el("modal").style.display = "flex";
+  };
+  el("modal").onclick = () => el("modal").style.display = "none";
 
-      list.forEach(item => {
-        if (!item.画像 || !item.画像[0]) return;
-
-        const div = document.createElement("div");
-        div.className = "item";
-
-        const img = document.createElement("img");
-        img.src = "./images/" + item.画像[0];
-        img.onclick = () => {
-          elModalImg.src = img.src;
-          elModal.style.display = "flex";
-        };
-
-        const stitchText =
-          (item.カテゴリ === "CAUCHU" || !item.色.ステッチ)
-            ? "なし"
-            : item.色.ステッチ;
-
-        // ✅ 備考の「※」を本物の <br> で改行
-        const noteHtml = item.備考
-          ? `備考：${String(item.備考).replace(/※/g, "<br>※")}<br>`
-          : "";
-
-        const info = document.createElement("div");
-        info.innerHTML = `
-          <b>${item.品番}</b><br>
-          素材1（表）：${item.色.素材1}<br>
-          素材2（裏）：${item.色.素材2}<br>
-          ステッチ：${stitchText}<br>
-          ${noteHtml}
-        `;
-
-        div.appendChild(img);
-        div.appendChild(info);
-        elResult.appendChild(div);
-      });
-    }
-
-    function search() {
-      let hit = DATA;
-
-      if (elCategory.value)
-        hit = hit.filter(i => i.カテゴリ === elCategory.value);
-
-      if (elMat1.value)
-        hit = hit.filter(i => i.色グループ.素材1 === elMat1.value);
-
-      if (elMat2.value)
-        hit = hit.filter(i => i.色グループ.素材2 === elMat2.value);
-
-      // ✅ 追加：素材2（裏）の素材名（完全一致）
-      if (elMat2Name.value)
-        hit = hit.filter(i => i && i.色 && i.色.素材2 === elMat2Name.value);
-
-      if (elStitch.value)
-        hit = hit.filter(i => i.色グループ.ステッチ === elStitch.value);
-
-      if (elSearch.value.trim()) {
-        const w = elSearch.value.trim();
-        hit = hit.filter(i =>
-          (i.色 && i.色.素材1 && i.色.素材1.includes(w)) ||
-          (i.色 && i.色.素材2 && i.色.素材2.includes(w)) ||
-          (i.色 && i.色.ステッチ && i.色.ステッチ.includes(w)) ||
-          (i.備考 && i.備考.includes(w))
-        );
-      }
-
-      // ✅ 件数表示
-      elCount.textContent =
-        (hit.length === DATA.length)
-          ? `全 ${hit.length} 件を表示中`
-          : `検索結果：${hit.length} 件`;
-
-      render(hit);
-    }
-
-    function resetConditions() {
-      elCategory.value = "";
-      elMat1.value = "";
-      elMat2.value = "";
-      elMat2Name.value = ""; // ✅ 追加
-      elStitch.value = "";
-      elSearch.value = "";
-
-      updateAvailabilityByCategory();
-      rebuildMaterial2NameOptions();
-      search();
-    }
-
-    // イベント
-    elSearch.oninput = search;
-
-    elCategory.onchange = () => {
-      updateAvailabilityByCategory();
-      rebuildMaterial2NameOptions(); // ✅ カテゴリに応じて素材2素材名候補を作り直す
-      search();
-    };
-
-    elMat1.onchange = search;
-    elMat2.onchange = search;
-    elMat2Name.onchange = search; // ✅ 追加
-    elStitch.onchange = search;
-
-    elReset.onclick = resetConditions;
-    elModal.onclick = () => elModal.style.display = "none";
-
-    // 初期表示
-    updateAvailabilityByCategory();
-    rebuildMaterial2NameOptions();
-    search();
-  })();
-  </script>
+  document.querySelectorAll("select,input").forEach(e => e.onchange = search);
+  search();
+})();
+</script>
 
 </body>
 </html>
