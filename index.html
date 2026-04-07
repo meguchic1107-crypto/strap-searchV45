@@ -89,6 +89,12 @@ input, select {
   background: linear-gradient(135deg,#f5d76e,#d4af37);
 }
 
+/* ===== パレット無効化 ===== */
+.palette.disabled {
+  pointer-events: none;
+  opacity: 0.4;
+}
+
 /* ===== 結果 ===== */
 .item {
   border: 1px solid #ccc;
@@ -177,13 +183,11 @@ input, select {
 (() => {
   const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
   const COLORS_STITCH = [...COLORS_MAIN,"金系"];
-
   const el = id => document.getElementById(id);
 
   function buildPalette(containerId, hiddenId, colors) {
     const box = el(containerId);
     const hidden = el(hiddenId);
-
     colors.forEach(c => {
       const d = document.createElement("div");
       d.className = `color-chip color-${c}`;
@@ -206,6 +210,21 @@ input, select {
   buildPalette("paletteMaterial1","groupMaterial1",COLORS_MAIN);
   buildPalette("paletteMaterial2","groupMaterial2",COLORS_MAIN);
   buildPalette("paletteStitch","groupStitch",COLORS_STITCH);
+
+  function updateAvailabilityByCategory() {
+    const isCauchu = el("category").value === "CAUCHU";
+    const stitchPalette = el("paletteStitch");
+    const stitchHidden = el("groupStitch");
+
+    if (isCauchu) {
+      stitchPalette.classList.add("disabled");
+      stitchHidden.value = "";
+      stitchPalette.querySelectorAll(".color-chip")
+        .forEach(c => c.classList.remove("selected"));
+    } else {
+      stitchPalette.classList.remove("disabled");
+    }
+  }
 
   function search() {
     let hit = DATA;
@@ -234,7 +253,6 @@ input, select {
       );
 
     el("count").textContent = `検索結果：${hit.length} 件`;
-
     el("result").innerHTML = hit.map(i => `
       <div class="item">
         <img src="./images/${i.画像[0]}" onclick="openModal('${i.画像[0]}')">
@@ -254,7 +272,13 @@ input, select {
   };
   el("modal").onclick = () => el("modal").style.display = "none";
 
+  el("category").onchange = () => {
+    updateAvailabilityByCategory();
+    search();
+  };
   document.querySelectorAll("select,input").forEach(e => e.onchange = search);
+
+  updateAvailabilityByCategory();
   search();
 })();
 </script>
