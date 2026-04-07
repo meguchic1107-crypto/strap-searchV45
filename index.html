@@ -49,9 +49,7 @@ input,select {
   background:#f5f5f5;
   border-radius:4px;
 }
-.cancel-btn:hover {
-  background:#e0e0e0;
-}
+.cancel-btn:hover { background:#e0e0e0; }
 
 /* ===== カラーパレット ===== */
 .palette { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 16px; }
@@ -138,8 +136,8 @@ input,select {
 }
 </style>
 
-<!-- ✅ data.js はそのまま -->
-data.jsscript>
+<!-- ✅ data.js を正しく読み込む -->
+<script src="data.js"></script>
 </head>
 
 <body>
@@ -175,12 +173,8 @@ data.jsscript>
 
 <div class="label">部分一致検索</div>
 <div class="search-controls">
-  <input
-    id="search"
-    placeholder="例：GOLF用、限定、在庫外、使用不可 など">
-  <button type="button" class="cancel-btn" id="cancelBtn">
-    検索キャンセル
-  </button>
+  <input id="search" placeholder="例：GOLF用、限定、在庫外、使用不可 など">
+  <button type="button" class="cancel-btn" id="cancelBtn">検索キャンセル</button>
 </div>
 
 <div id="count"></div>
@@ -201,14 +195,9 @@ data.jsscript>
       d.className=`color-chip color-${c}`;
       d.title=c;
       d.onclick=()=>{
-        if(hidden.value===c){
-          hidden.value="";
-          d.classList.remove("selected");
-        }else{
-          hidden.value=c;
-          [...box.children].forEach(x=>x.classList.remove("selected"));
-          d.classList.add("selected");
-        }
+        hidden.value = hidden.value === c ? "" : c;
+        [...box.children].forEach(x=>x.classList.remove("selected"));
+        if(hidden.value) d.classList.add("selected");
         search();
       };
       box.appendChild(d);
@@ -226,7 +215,7 @@ data.jsscript>
       p.classList.add("disabled");
       h.value="";
       p.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
-    }else{
+    } else {
       p.classList.remove("disabled");
     }
   }
@@ -234,17 +223,15 @@ data.jsscript>
   const includesMatch=(v,t)=>typeof v==="string" && v.includes(t);
 
   function isBlueRescue(i, sel){
-    if(sel!=="青系") return false;
-    if(i.色グループ.素材1!=="未分類") return false;
-    return /青|ブルー|ターコイズ|ミント/i.test(i.色.素材1);
+    return sel==="青系" &&
+           i.色グループ.素材1==="未分類" &&
+           /青|ブルー|ターコイズ|ミント/i.test(i.色.素材1);
   }
 
   function clearAll(){
     el("category").value="";
     el("search").value="";
-    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id=>{
-      el(id).value="";
-    });
+    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id=>el(id).value="");
     document.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
     updateByCategory();
     search();
@@ -258,9 +245,7 @@ data.jsscript>
 
     if(el("groupMaterial1").value){
       const sel=el("groupMaterial1").value;
-      hit=hit.filter(i =>
-        includesMatch(i.色グループ.素材1, sel) || isBlueRescue(i, sel)
-      );
+      hit=hit.filter(i=>includesMatch(i.色グループ.素材1, sel) || isBlueRescue(i, sel));
     }
 
     if(el("groupMaterial2").value)
@@ -285,7 +270,6 @@ data.jsscript>
       const noteHtml = i.備考
         ? `<div class="note">備考：${String(i.備考).replace(/※/g,"<br>※")}</div>`
         : "";
-
       return `
         <div class="item">
           <img src="./images/${i.画像[0]}" onclick="openModal('${i.画像[0]}')">
@@ -309,7 +293,7 @@ data.jsscript>
 
   el("category").onchange=()=>{updateByCategory();search();};
   document.querySelectorAll("input,select").forEach(e=>e.onchange=search);
-  el("cancelBtn").onclick = clearAll;
+  el("cancelBtn").onclick=clearAll;
 
   updateByCategory();
   search();
@@ -318,4 +302,5 @@ data.jsscript>
 
 </body>
 </html>
+
 
