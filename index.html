@@ -26,7 +26,7 @@ body { font-family:sans-serif; padding:20px; }
 .label { font-weight:bold; margin-top:14px; }
 input,select { padding:8px; font-size:16px; width:300px; }
 
-/* ===== パレット ===== */
+/* ===== カラーパレット ===== */
 .palette { display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 16px; }
 .color-chip {
   width:34px; height:34px; border-radius:50%;
@@ -51,11 +51,6 @@ input,select { padding:8px; font-size:16px; width:300px; }
 .color-茶系{background:#6d4c41}
 .color-グレー系{background:#9e9e9e}
 .color-金系{background:linear-gradient(135deg,#f5d76e,#d4af37)}
-.color-未分類{
-  background:repeating-linear-gradient(
-    45deg,#ccc,#ccc 6px,#eee 6px,#eee 12px
-  );
-}
 
 /* ===== 無効化 ===== */
 .palette.disabled { pointer-events:none; opacity:0.4; }
@@ -92,6 +87,7 @@ input,select { padding:8px; font-size:16px; width:300px; }
 }
 </style>
 
+<!-- ✅ 既存の data.js をそのまま読み込み -->
 <script src="data.js"></script>
 </head>
 
@@ -136,7 +132,8 @@ input,select { padding:8px; font-size:16px; width:300px; }
 
 <script>
 (() => {
-  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系","未分類"];
+  /* ✅ 未分類パレットは使わない */
+  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
   const COLORS_STITCH = [...COLORS_MAIN,"金系"];
   const el = id => document.getElementById(id);
 
@@ -179,24 +176,34 @@ input,select { padding:8px; font-size:16px; width:300px; }
 
   const includesMatch=(v,t)=>typeof v==="string" && v.includes(t);
 
+  function isBlueRescue(i, selected){
+    if(selected!=="青系") return false;
+    if(i.色グループ.素材1!=="未分類") return false;
+    return /青|ブルー|ターコイズ|ミント/i.test(i.色.素材1);
+  }
+
   function search(){
     let hit=DATA;
 
     if(el("category").value)
       hit=hit.filter(i=>i.カテゴリ===el("category").value);
 
-    if(el("groupMaterial1").value)
-      hit=hit.filter(i=>includesMatch(i.色グループ.素材1,el("groupMaterial1").value));
+    if(el("groupMaterial1").value){
+      const sel=el("groupMaterial1").value;
+      hit=hit.filter(i =>
+        includesMatch(i.色グループ.素材1, sel) || isBlueRescue(i, sel)
+      );
+    }
 
     if(el("groupMaterial2").value)
-      hit=hit.filter(i=>includesMatch(i.色グループ.素材2,el("groupMaterial2").value));
+      hit=hit.filter(i=>includesMatch(i.色グループ.素材2, el("groupMaterial2").value));
 
     if(el("groupStitch").value)
-      hit=hit.filter(i=>includesMatch(i.色グループ.ステッチ,el("groupStitch").value));
+      hit=hit.filter(i=>includesMatch(i.色グループ.ステッチ, el("groupStitch").value));
 
     if(el("search").value.trim()){
       const w=el("search").value.trim();
-      hit=hit.filter(i=>
+      hit=hit.filter(i =>
         i.色.素材1.includes(w) ||
         i.色.素材2.includes(w) ||
         (i.色.ステッチ && i.色.ステッチ.includes(w)) ||
@@ -242,4 +249,3 @@ input,select { padding:8px; font-size:16px; width:300px; }
 
 </body>
 </html>
-``
