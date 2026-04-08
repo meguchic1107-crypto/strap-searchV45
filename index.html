@@ -38,14 +38,44 @@ input,select{ padding:8px; font-size:16px; width:300px; }
 }
 .cancel-btn:hover{ background:#e0e0e0; }
 
-/* ===== パレット（複数選択対応） ===== */
+/* ===== パレット全体を包む ===== */
+.palette-wrapper {
+  position: relative;
+  margin-top: 6px;
+}
+
+/* ===== 右上の分割カラー丸ボタン ===== */
+.palette-toggle {
+  position: absolute;
+  top: -6px;
+  right: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  cursor: pointer;
+  background: conic-gradient(
+    #000 0deg 90deg,
+    #fff 90deg 180deg,
+    #1976d2 180deg 270deg,
+    #fdd835 270deg 360deg
+  );
+  border: 2px solid #ccc;
+}
+
+/* ===== パレット本体 ===== */
 .palette {
-  display: flex;
+  display: none;
   flex-wrap: wrap;
   gap: 12px;
   margin: 8px 0 16px;
+  padding-top: 40px;
 }
 
+.palette.open {
+  display: flex;
+}
+
+/* ===== 色チップ ===== */
 .color-chip {
   width: 34px;
   height: 34px;
@@ -56,18 +86,15 @@ input,select{ padding:8px; font-size:16px; width:300px; }
   transition: 0.2s;
 }
 
-.color-chip.selected {
-  border: 3px solid #007aff;
-}
-
+/* ===== 真ん中のチェックマーク ===== */
 .color-chip.selected::after {
   content: "✔";
-  color: #007aff;
-  font-size: 16px;
+  font-size: 20px;
   font-weight: bold;
   position: absolute;
-  top: -6px;
-  right: -6px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
 }
 
 /* ===== 色 ===== */
@@ -131,7 +158,6 @@ input,select{ padding:8px; font-size:16px; width:300px; }
 }
 </style>
 
-<!-- data.js（同階層） -->
 <script src="data.js"></script>
 </head>
 
@@ -146,27 +172,30 @@ input,select{ padding:8px; font-size:16px; width:300px; }
   <div class="notice-sub">注3：色見本として参考にしてください</div>
 </div>
 
-<div class="label">素材カテゴリ</div>
-<select id="category">
-  <option value="">指定なし</option>
-  <option value="CROCORUBBER">CROCORUBBER</option>
-  <option value="CALFRUBBER">CALFRUBBER</option>
-  <option value="SUEDERUBBER">SUEDERUBBER</option>
-  <option value="FABRICRUBBER">FABRICRUBBER</option>
-  <option value="CAUCHU">CAUCHU</option>
-</select>
+<!-- ===== パレットUI ===== -->
 
 <div class="label">素材1（表）の色系統検索</div>
-<div class="palette" id="pMat1"></div>
+<div class="palette-wrapper">
+  <div class="palette-toggle"></div>
+  <div class="palette" id="pMat1"></div>
+</div>
 <input type="hidden" id="groupMaterial1">
 
-<div class="label">素材2（裏）の色系統検索<span class="label-note">※素材として茶カーフ含</span></div>
-<div class="palette" id="pMat2"></div>
+<div class="label">素材2（裏）の色系統検索</div>
+<div class="palette-wrapper">
+  <div class="palette-toggle"></div>
+  <div class="palette" id="pMat2"></div>
+</div>
 <input type="hidden" id="groupMaterial2">
 
 <div class="label">ステッチの色系統検索</div>
-<div class="palette" id="pStitch"></div>
+<div class="palette-wrapper">
+  <div class="palette-toggle"></div>
+  <div class="palette" id="pStitch"></div>
+</div>
 <input type="hidden" id="groupStitch">
+
+<!-- ===== 検索 ===== -->
 
 <div class="label">部分一致検索</div>
 <div class="search-controls">
@@ -183,16 +212,39 @@ input,select{ padding:8px; font-size:16px; width:300px; }
 (() => {
   const el = id => document.getElementById(id);
 
-  /* ===== 色リスト（既存10色＋ステッチのみ金系） ===== */
+  /* ===== 色リスト ===== */
   const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
   const COLORS_STITCH = [...COLORS_MAIN, "金系"];
 
-  /* ===== 複数選択パレット生成 ===== */
+  /* ===== 明度判定（白 or 黒チェック） ===== */
+  function getBrightness(c){
+    const map = {
+      "黒系": 20,
+      "青系": 80,
+      "白系": 250,
+      "黄系": 230,
+      "赤系": 120,
+      "オレンジ系": 180,
+      "緑系": 100,
+      "パープル系": 90,
+      "茶系": 70,
+      "グレー系": 150,
+      "金系": 200
+    };
+    return map[c] ?? 150;
+  }
+
+  /* ===== パレット生成（右上ボタンで開閉） ===== */
   function buildMulti(pid, hid, colors){
-    const box = el(pid), hidden = el(hid);
+    const box = el(pid);
+    const wrapper = box.parentElement;
+    const toggle = wrapper.querySelector(".palette-toggle");
+    const hidden = el(hid);
+
+    toggle.onclick = () => box.classList.toggle("open");
+
     box.innerHTML = "";
     let selected = [];
-
     box.dataset.selected = "[]";
 
     colors.forEach(c => {
@@ -209,6 +261,9 @@ input,select{ padding:8px; font-size:16px; width:300px; }
         } else {
           selected.push(c);
           d.classList.add("selected");
+
+          const bright = getBrightness(c);
+          d.style.color = bright < 140 ? "white" : "black";
         }
 
         box.dataset.selected = JSON.stringify(selected);
@@ -224,7 +279,7 @@ input,select{ padding:8px; font-size:16px; width:300px; }
   buildMulti("pMat2","groupMaterial2", COLORS_MAIN);
   buildMulti("pStitch","groupStitch", COLORS_STITCH);
 
-  /* ===== 複数選択対応フィルタ ===== */
+  /* ===== 複数選択フィルタ ===== */
   function filterByGroup(hit, key, hiddenId){
     const val = el(hiddenId).value;
     if(!val) return hit;
@@ -241,7 +296,7 @@ input,select{ padding:8px; font-size:16px; width:300px; }
   function search(){
     let hit = DATA;
 
-    if(el("category").value)
+    if(el("category")?.value)
       hit = hit.filter(i => i.カテゴリ === el("category").value);
 
     hit = filterByGroup(hit, "素材1", "groupMaterial1");
@@ -284,10 +339,8 @@ input,select{ padding:8px; font-size:16px; width:300px; }
   };
   el("modal").onclick = () => el("modal").style.display = "none";
 
-  el("category").onchange = search;
   el("search").oninput = search;
   el("cancelBtn").onclick = () => {
-    el("category").value = "";
     el("search").value = "";
     ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
     document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
@@ -300,6 +353,7 @@ input,select{ padding:8px; font-size:16px; width:300px; }
 
 </body>
 </html>
+
 
 
 
