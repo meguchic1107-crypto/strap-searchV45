@@ -25,6 +25,11 @@ body{font-family:sans-serif;padding:20px}
 
 /* ===== UI ===== */
 .label{font-weight:bold;margin-top:14px}
+.label-note{
+  font-size:12px;
+  color:#666;
+  margin:4px 0 6px 0;
+}
 input,select{padding:8px;font-size:16px;width:300px}
 .search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
@@ -63,8 +68,9 @@ input,select{padding:8px;font-size:16px;width:300px}
   width:32px;height:32px;border-radius:50%;
   cursor:pointer;position:relative;
   border:2px solid rgba(0,0,0,.1);
-  box-shadow:0 6px 14px rgba(0,0,0,.12),
-             inset 0 1px 0 rgba(255,255,255,.6)
+  box-shadow:
+    0 6px 14px rgba(0,0,0,.12),
+    inset 0 1px 0 rgba(255,255,255,.6)
 }
 .color-chip.selected{
   box-shadow:
@@ -169,6 +175,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 <input type="hidden" id="groupMaterial1">
 
 <div class="label">素材2（裏）</div>
+<div class="label-note">※裏の素材（茶カーフ）含む</div>
 <div class="palette" id="pMat2"></div>
 <input type="hidden" id="groupMaterial2">
 
@@ -221,7 +228,7 @@ build("pMat1","groupMaterial1",COLORS_MAIN);
 build("pMat2","groupMaterial2",COLORS_MAIN);
 build("pStitch","groupStitch",COLORS_STITCH);
 
-/* パレット開閉＋文言切替 */
+/* パレット開閉＋文言 */
 const pals=["pMat1","pMat2","pStitch"].map(el);
 const paletteBtn=el("paletteBtn");
 paletteBtn.onclick=()=>{
@@ -290,6 +297,7 @@ search();
 
 </body>
 </html>
+
 
 
 
