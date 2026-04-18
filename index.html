@@ -33,12 +33,12 @@ body{font-family:sans-serif;padding:20px}
 input,select{padding:8px;font-size:16px;width:300px}
 .search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-/* ✅ 素材カテゴリ行を横並びにする */
+/* ✅ 素材カテゴリ行を横並びに（ボタンを隣へ） */
 .category-row{
   display:flex;
   gap:10px;
-  align-items:center;
   flex-wrap:wrap;
+  align-items:center;
 }
 .category-row select{flex:0 1 300px}
 
@@ -85,10 +85,9 @@ input,select{padding:8px;font-size:16px;width:300px}
   box-shadow:
     0 6px 14px rgba(0,0,0,.12),
     inset 0 1px 0 rgba(255,255,255,.6);
-
+  -webkit-tap-highlight-color: transparent;
   z-index:2;
   outline:none;
-  -webkit-tap-highlight-color: transparent;
 }
 .color-chip.selected{
   box-shadow:
@@ -103,7 +102,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   text-align:center;line-height:18px;font-weight:900
 }
 
-/* ✅ 色名ガイド（スマホ対応） */
+/* ===== 色名ガイド（スマホで残る問題の確実対策版） ===== */
 .color-chip::before{
   content:attr(data-color-name);
   position:absolute;
@@ -130,12 +129,11 @@ input,select{padding:8px;font-size:16px;width:300px}
 /* PC: hoverで表示 */
 .color-chip:hover::before{opacity:1}
 
-/* 選択中は表示（既存仕様） */
+/* ✅選択中は表示 */
 .color-chip.selected::before{opacity:1}
 
-/* ✅スマホ: focus/activeでも表示（ただし解除時にblurで消す） */
-.color-chip:focus::before{opacity:1}
-.color-chip:active::before{opacity:1}
+/* ✅押してる間だけ表示（focusに頼らない！） */
+.color-chip.pressed::before{opacity:1}
 
 /* ✅スマホ（hoverなし端末）は上に表示 */
 @media (hover: none) {
@@ -204,7 +202,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 <div class="label">素材カテゴリ</div>
 
-<!-- ✅ ここに「色パレット」ボタンを移動（カテゴリの横） -->
+<!-- ✅色パレットボタンをカテゴリの横へ -->
 <div class="category-row">
   <select id="category">
     <option value="">指定なし</option>
@@ -214,7 +212,6 @@ input,select{padding:8px;font-size:16px;width:300px}
     <option value="FABRICRUBBER">FABRICRUBBER</option>
     <option value="CAUCHU">CAUCHU</option>
   </select>
-
   <button class="palette-btn" id="paletteBtn">色パレット</button>
 </div>
 
@@ -261,10 +258,22 @@ input,select{padding:8px;font-size:16px;width:300px}
       d.className = `color-chip color-${c}`;
       d.dataset.colorName = c;
 
-      /* ✅スマホで focus 表示できるように */
+      // アクセシビリティ（任意）
       d.tabIndex = 0;
       d.setAttribute("role","button");
       d.setAttribute("aria-label", c);
+
+      // ✅押してる間だけツールチップ出す（focusに頼らない）
+      const pressOn  = () => d.classList.add("pressed");
+      const pressOff = () => {
+        // 選択中は残してOK、未選択なら消す
+        if(!d.classList.contains("selected")) d.classList.remove("pressed");
+      };
+
+      d.addEventListener("pointerdown", pressOn);
+      d.addEventListener("pointerup", pressOff);
+      d.addEventListener("pointercancel", pressOff);
+      d.addEventListener("pointerleave", pressOff);
 
       const toggle = () => {
         let s = JSON.parse(box.dataset.selected);
@@ -273,14 +282,13 @@ input,select{padding:8px;font-size:16px;width:300px}
         if(willSelect){
           s = [...s, c];
           d.classList.add("selected");
-
-          // ✅ 選択したらフォーカスを当てて色名を見せる
-          d.focus({preventScroll:true});
+          // 選択中は文字を出しておく（selected::beforeで表示）
+          d.classList.add("pressed"); // タップ直後も確実に表示
         }else{
           s = s.filter(x => x !== c);
           d.classList.remove("selected");
-
-          // ✅ 選択解除したらフォーカスを外して色名も消す
+          // ✅解除したら文字も必ず消す
+          d.classList.remove("pressed");
           d.blur();
         }
 
@@ -291,7 +299,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 
       d.onclick = toggle;
 
-      /* ✅キーボード操作（PC） */
+      // キーボード操作（PC）
       d.onkeydown = (e) => {
         if(e.key === "Enter" || e.key === " "){
           e.preventDefault();
@@ -364,7 +372,8 @@ input,select{padding:8px;font-size:16px;width:300px}
     ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
     document.querySelectorAll(".color-chip").forEach(c => {
       c.classList.remove("selected");
-      c.blur(); // ✅キャンセルでも文字が残らないように
+      c.classList.remove("pressed"); // ✅文字も消す
+      c.blur();
     });
     el("search").value = "";
     search();
@@ -382,6 +391,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 </body>
 </html>
+
 
 
 
