@@ -33,7 +33,7 @@ body{font-family:sans-serif;padding:20px}
 input,select{padding:8px;font-size:16px;width:300px}
 .search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-/* ✅ 素材カテゴリ行を横並びに（ボタンを隣へ） */
+/* ✅ 素材カテゴリ + パレットボタンを横並びに */
 .category-row{
   display:flex;
   gap:10px;
@@ -70,7 +70,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   border:1px solid #eee;
   border-radius:14px;
 
-  /* ✅ツールチップ見切れ防止 */
+  /* ツールチップが見切れないように */
   overflow:visible;
   position:relative;
   z-index:1;
@@ -86,8 +86,8 @@ input,select{padding:8px;font-size:16px;width:300px}
     0 6px 14px rgba(0,0,0,.12),
     inset 0 1px 0 rgba(255,255,255,.6);
   -webkit-tap-highlight-color: transparent;
-  z-index:2;
   outline:none;
+  z-index:2;
 }
 .color-chip.selected{
   box-shadow:
@@ -102,7 +102,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   text-align:center;line-height:18px;font-weight:900
 }
 
-/* ===== 色名ガイド（スマホで残る問題の確実対策版） ===== */
+/* ===== 色名ガイド（ツールチップ） ===== */
 .color-chip::before{
   content:attr(data-color-name);
   position:absolute;
@@ -126,17 +126,19 @@ input,select{padding:8px;font-size:16px;width:300px}
   box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
 
-/* PC: hoverで表示 */
-.color-chip:hover::before{opacity:1}
+/* ✅「選択中だけ」表示（スマホではこれだけを使う） */
+.color-chip.selected::before{ opacity:1; }
 
-/* ✅選択中は表示 */
-.color-chip.selected::before{opacity:1}
+/* ✅PCなど、"本当にhoverできる"端末だけ hover を有効化 */
+@media (hover: hover) and (pointer: fine) {
+  .color-chip:hover::before{ opacity:1; }
+}
 
-/* ✅押してる間だけ表示（focusに頼らない！） */
-.color-chip.pressed::before{opacity:1}
-
-/* ✅スマホ（hoverなし端末）は上に表示 */
+/* ✅タッチ端末では sticky hover の影響を完全に遮断 */
 @media (hover: none) {
+  .color-chip:hover::before{ opacity:0 !important; }
+
+  /* スマホは上に出す（見切れ防止） */
   .color-chip::before{
     top:-38px;
     bottom:auto;
@@ -181,11 +183,11 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 @media(max-width:600px){
   input,select{width:100%}
-  .category-row select{width:100%}
   .item{flex-direction:column;align-items:center}
 }
 </style>
 
+<!-- DATA を読み込む（DATA 配列がここで定義されている前提） -->
 <script src="data.js"></script>
 </head>
 
@@ -201,8 +203,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 </div>
 
 <div class="label">素材カテゴリ</div>
-
-<!-- ✅色パレットボタンをカテゴリの横へ -->
+<!-- ✅ ボタンを素材カテゴリの横に移動 -->
 <div class="category-row">
   <select id="category">
     <option value="">指定なし</option>
@@ -212,6 +213,7 @@ input,select{padding:8px;font-size:16px;width:300px}
     <option value="FABRICRUBBER">FABRICRUBBER</option>
     <option value="CAUCHU">CAUCHU</option>
   </select>
+
   <button class="palette-btn" id="paletteBtn">色パレット</button>
 </div>
 
@@ -237,7 +239,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 <div id="count"></div>
 <div id="result"></div>
 
-<div id="modal"><img id="modalImg"></div>
+<div id="modal"><img id="modalImg" alt=""></div>
 
 <script>
 (() => {
@@ -258,38 +260,23 @@ input,select{padding:8px;font-size:16px;width:300px}
       d.className = `color-chip color-${c}`;
       d.dataset.colorName = c;
 
-      // アクセシビリティ（任意）
+      // 任意：アクセシビリティ（PCでTab移動できる）
       d.tabIndex = 0;
       d.setAttribute("role","button");
       d.setAttribute("aria-label", c);
 
-      // ✅押してる間だけツールチップ出す（focusに頼らない）
-      const pressOn  = () => d.classList.add("pressed");
-      const pressOff = () => {
-        // 選択中は残してOK、未選択なら消す
-        if(!d.classList.contains("selected")) d.classList.remove("pressed");
-      };
-
-      d.addEventListener("pointerdown", pressOn);
-      d.addEventListener("pointerup", pressOff);
-      d.addEventListener("pointercancel", pressOff);
-      d.addEventListener("pointerleave", pressOff);
-
       const toggle = () => {
         let s = JSON.parse(box.dataset.selected);
-        const willSelect = !s.includes(c);
+        const isSelected = s.includes(c);
 
-        if(willSelect){
-          s = [...s, c];
-          d.classList.add("selected");
-          // 選択中は文字を出しておく（selected::beforeで表示）
-          d.classList.add("pressed"); // タップ直後も確実に表示
-        }else{
+        if(isSelected){
+          // ✅解除：selectedを外す → 文字も消える（スマホでも確実）
           s = s.filter(x => x !== c);
           d.classList.remove("selected");
-          // ✅解除したら文字も必ず消す
-          d.classList.remove("pressed");
-          d.blur();
+        }else{
+          // ✅選択：selectedを付ける → 文字が出る
+          s = [...s, c];
+          d.classList.add("selected");
         }
 
         box.dataset.selected = JSON.stringify(s);
@@ -297,15 +284,13 @@ input,select{padding:8px;font-size:16px;width:300px}
         search();
       };
 
-      d.onclick = toggle;
-
-      // キーボード操作（PC）
-      d.onkeydown = (e) => {
+      d.addEventListener("click", toggle);
+      d.addEventListener("keydown", (e) => {
         if(e.key === "Enter" || e.key === " "){
           e.preventDefault();
           toggle();
         }
-      };
+      });
 
       box.appendChild(d);
     });
@@ -315,7 +300,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   build("pMat2","groupMaterial2",COLORS_MAIN);
   build("pStitch","groupStitch",COLORS_STITCH);
 
-  /* パレット開閉＋文言 */
+  /* パレット開閉 */
   const pals = ["pMat1","pMat2","pStitch"].map(el);
   const paletteBtn = el("paletteBtn");
   paletteBtn.onclick = () => {
@@ -327,7 +312,10 @@ input,select{padding:8px;font-size:16px;width:300px}
   function filter(hit, key, hid){
     const v = el(hid).value;
     if(!v) return hit;
-    return hit.filter(i => v.split(",").some(c => i.色グループ?.[key]?.includes(c)));
+    const selected = v.split(",").filter(Boolean);
+    return hit.filter(i =>
+      selected.some(c => i.色グループ?.[key]?.includes(c))
+    );
   }
 
   function search(){
@@ -365,17 +353,20 @@ input,select{padding:8px;font-size:16px;width:300px}
     `).join("");
   }
 
-  el("search").oninput = search;
-  el("category").onchange = search;
+  el("search").addEventListener("input", search);
+  el("category").addEventListener("change", search);
 
   el("cancelBtn").onclick = () => {
+    // hidden値クリア
     ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-    document.querySelectorAll(".color-chip").forEach(c => {
-      c.classList.remove("selected");
-      c.classList.remove("pressed"); // ✅文字も消す
-      c.blur();
-    });
+
+    // 選択状態クリア
+    document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+
+    // テキスト検索クリア
     el("search").value = "";
+
     search();
   };
 
@@ -391,8 +382,6 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 </body>
 </html>
-
-
 
 
 
