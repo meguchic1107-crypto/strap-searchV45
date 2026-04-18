@@ -59,7 +59,12 @@ input,select{padding:8px;font-size:16px;width:300px}
   padding:12px;
   background:#fafafa;
   border:1px solid #eee;
-  border-radius:14px
+  border-radius:14px;
+
+  /* ✅ツールチップが見切れないように */
+  overflow:visible;
+  position:relative;
+  z-index:1;
 }
 .palette.open{display:flex}
 
@@ -70,7 +75,12 @@ input,select{padding:8px;font-size:16px;width:300px}
   border:2px solid rgba(0,0,0,.1);
   box-shadow:
     0 6px 14px rgba(0,0,0,.12),
-    inset 0 1px 0 rgba(255,255,255,.6)
+    inset 0 1px 0 rgba(255,255,255,.6);
+
+  /* ✅ツールチップを前面に */
+  z-index:2;
+  outline:none;
+  -webkit-tap-highlight-color: transparent;
 }
 .color-chip.selected{
   box-shadow:
@@ -85,24 +95,48 @@ input,select{padding:8px;font-size:16px;width:300px}
   text-align:center;line-height:18px;font-weight:900
 }
 
-/* 色名ガイド */
+/* ✅ 色名ガイド（スマホで見えない問題の修正版） */
 .color-chip::before{
   content:attr(data-color-name);
   position:absolute;
-  bottom:-26px;
+
+  /* PCは下に表示 */
+  bottom:-30px;
   left:50%;
   transform:translateX(-50%);
-  background:rgba(0,0,0,.75);
+
+  background:rgba(0,0,0,.85);
   color:#fff;
-  font-size:11px;
-  padding:3px 6px;
-  border-radius:6px;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:8px;
   white-space:nowrap;
+
   opacity:0;
-  pointer-events:none
+  pointer-events:none;
+
+  /* ✅他の要素に隠れない */
+  z-index:9999;
+  box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
-.color-chip:hover::before,
+
+/* PC: hoverで表示 */
+.color-chip:hover::before{opacity:1}
+
+/* 選択時は表示（既存仕様） */
 .color-chip.selected::before{opacity:1}
+
+/* ✅スマホ: hoverが無いので focus/active でも表示 */
+.color-chip:focus::before{opacity:1}
+.color-chip:active::before{opacity:1}
+
+/* ✅スマホ（hoverなし端末）は上に表示して見切れ防止 */
+@media (hover: none) {
+  .color-chip::before{
+    top:-38px;
+    bottom:auto;
+  }
+}
 
 /* ===== 色コード（全色） ===== */
 .color-黒系{background:#000}
@@ -196,102 +230,123 @@ input,select{padding:8px;font-size:16px;width:300px}
 <div id="modal"><img id="modalImg"></div>
 
 <script>
-(()=>{
-const el=id=>document.getElementById(id);
+(() => {
+  const el = id => document.getElementById(id);
 
-const COLORS_MAIN=[
- "黒系","青系","白系","黄系","赤系",
- "オレンジ系","緑系","パープル系","茶系","グレー系"
-];
-const COLORS_STITCH=[...COLORS_MAIN,"金系"];
+  const COLORS_MAIN = [
+    "黒系","青系","白系","黄系","赤系",
+    "オレンジ系","緑系","パープル系","茶系","グレー系"
+  ];
+  const COLORS_STITCH = [...COLORS_MAIN,"金系"];
 
-function build(pid,hid,colors){
- const box=el(pid), hidden=el(hid);
- box.dataset.selected="[]";
- colors.forEach(c=>{
-  const d=document.createElement("div");
-  d.className=`color-chip color-${c}`;
-  d.dataset.colorName=c;
-  d.onclick=()=>{
-    let s=JSON.parse(box.dataset.selected);
-    s=s.includes(c)?s.filter(x=>x!==c):[...s,c];
-    box.dataset.selected=JSON.stringify(s);
-    hidden.value=s.join(",");
-    d.classList.toggle("selected");
+  function build(pid, hid, colors){
+    const box = el(pid), hidden = el(hid);
+    box.dataset.selected = "[]";
+
+    colors.forEach(c => {
+      const d = document.createElement("div");
+      d.className = `color-chip color-${c}`;
+      d.dataset.colorName = c;
+
+      /* ✅スマホでfocus表示できるように */
+      d.tabIndex = 0;
+      d.setAttribute("role","button");
+      d.setAttribute("aria-label", c);
+
+      const toggle = () => {
+        let s = JSON.parse(box.dataset.selected);
+        s = s.includes(c) ? s.filter(x => x !== c) : [...s, c];
+        box.dataset.selected = JSON.stringify(s);
+        hidden.value = s.join(",");
+        d.classList.toggle("selected");
+        search();
+      };
+
+      d.onclick = toggle;
+
+      /* ✅キーボード操作も可（PC） */
+      d.onkeydown = (e) => {
+        if(e.key === "Enter" || e.key === " "){
+          e.preventDefault();
+          toggle();
+        }
+      };
+
+      box.appendChild(d);
+    });
+  }
+
+  build("pMat1","groupMaterial1",COLORS_MAIN);
+  build("pMat2","groupMaterial2",COLORS_MAIN);
+  build("pStitch","groupStitch",COLORS_STITCH);
+
+  /* パレット開閉＋文言 */
+  const pals = ["pMat1","pMat2","pStitch"].map(el);
+  const paletteBtn = el("paletteBtn");
+  paletteBtn.onclick = () => {
+    const open = !pals.some(p => p.classList.contains("open"));
+    pals.forEach(p => p.classList.toggle("open", open));
+    paletteBtn.textContent = open ? "色パレット（閉じる）" : "色パレット";
+  };
+
+  function filter(hit, key, hid){
+    const v = el(hid).value;
+    if(!v) return hit;
+    return hit.filter(i => v.split(",").some(c => i.色グループ?.[key]?.includes(c)));
+  }
+
+  function search(){
+    let hit = DATA;
+
+    if(el("category").value)
+      hit = hit.filter(i => i.カテゴリ === el("category").value);
+
+    hit = filter(hit,"素材1","groupMaterial1");
+    hit = filter(hit,"素材2","groupMaterial2");
+    hit = filter(hit,"ステッチ","groupStitch");
+
+    if(el("search").value.trim()){
+      const w = el("search").value.trim();
+      hit = hit.filter(i =>
+        (i.色?.素材1 || "").includes(w) ||
+        (i.色?.素材2 || "").includes(w) ||
+        (i.色?.ステッチ || "").includes(w) ||
+        (i.備考 || "").includes(w)
+      );
+    }
+
+    el("count").textContent = `検索結果：${hit.length} 件`;
+    el("result").innerHTML = hit.map(i => `
+      <div class="item">
+        <img src="./images/${i.画像?.[0] || ""}" onclick="openModal('${i.画像?.[0] || ""}')">
+        <div>
+          <b>${i.品番}</b><br>
+          表：${i.色.素材1}<br>
+          裏：${i.色.素材2}<br>
+          ステッチ：${i.色.ステッチ || "なし"}
+          ${i.備考 ? `<div class="note">${i.備考}</div>` : ""}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  el("search").oninput = search;
+  el("category").onchange = search;
+
+  el("cancelBtn").onclick = () => {
+    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+    el("search").value = "";
     search();
   };
-  box.appendChild(d);
- });
-}
 
-build("pMat1","groupMaterial1",COLORS_MAIN);
-build("pMat2","groupMaterial2",COLORS_MAIN);
-build("pStitch","groupStitch",COLORS_STITCH);
+  window.openModal = s => {
+    el("modalImg").src = "./images/" + s;
+    el("modal").style.display = "flex";
+  };
+  el("modal").onclick = () => el("modal").style.display = "none";
 
-/* パレット開閉＋文言 */
-const pals=["pMat1","pMat2","pStitch"].map(el);
-const paletteBtn=el("paletteBtn");
-paletteBtn.onclick=()=>{
- const open=!pals.some(p=>p.classList.contains("open"));
- pals.forEach(p=>p.classList.toggle("open",open));
- paletteBtn.textContent=open?"色パレット（閉じる）":"色パレット";
-};
-
-function filter(hit,key,hid){
- const v=el(hid).value;
- if(!v)return hit;
- return hit.filter(i=>v.split(",").some(c=>i.色グループ?.[key]?.includes(c)));
-}
-
-function search(){
- let hit=DATA;
- if(el("category").value)
-   hit=hit.filter(i=>i.カテゴリ===el("category").value);
- hit=filter(hit,"素材1","groupMaterial1");
- hit=filter(hit,"素材2","groupMaterial2");
- hit=filter(hit,"ステッチ","groupStitch");
-
- if(el("search").value.trim()){
-  const w=el("search").value.trim();
-  hit=hit.filter(i=>
-   (i.色?.素材1||"").includes(w)||
-   (i.色?.素材2||"").includes(w)||
-   (i.色?.ステッチ||"").includes(w)||
-   (i.備考||"").includes(w)
-  );
- }
-
- el("count").textContent=`検索結果：${hit.length} 件`;
- el("result").innerHTML=hit.map(i=>`
-  <div class="item">
-   <img src="./images/${i.画像?.[0]||""}" onclick="openModal('${i.画像?.[0]||""}')">
-   <div>
-    <b>${i.品番}</b><br>
-    表：${i.色.素材1}<br>
-    裏：${i.色.素材2}<br>
-    ステッチ：${i.色.ステッチ||"なし"}
-    ${i.備考?`<div class="note">${i.備考}</div>`:""}
-   </div>
-  </div>
- `).join("");
-}
-
-el("search").oninput=search;
-el("category").onchange=search;
-el("cancelBtn").onclick=()=>{
- ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id=>el(id).value="");
- document.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
- el("search").value="";
- search();
-};
-
-window.openModal=s=>{
- el("modalImg").src="./images/"+s;
- el("modal").style.display="flex";
-};
-el("modal").onclick=()=>el("modal").style.display="none";
-
-search();
+  search();
 })();
 </script>
 
