@@ -50,7 +50,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   font-weight:bold
 }
 .cancel-btn{border:1px solid #999;background:#f5f5f5}
-.clear-result-btn{border:1px solid #b0bec5;background:#eceff1}
+.clear-result-btn{border:1px solid #b0bec5;background:#eceff1;color:#37474f}
 
 /* ===== パレット ===== */
 .palette{
@@ -62,7 +62,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   background:#fafafa;
   border:1px solid #eee;
   border-radius:14px;
-  overflow:visible;
+  overflow:visible; /* ツールチップ見切れ防止 */
 }
 .palette.open{display:flex}
 
@@ -72,7 +72,11 @@ input,select{padding:8px;font-size:16px;width:300px}
   position:relative;
   cursor:pointer;
   border:2px solid rgba(0,0,0,.1);
-  box-shadow:0 4px 10px rgba(0,0,0,.15);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.15),
+    inset 0 1px 0 rgba(255,255,255,.6);
+  -webkit-tap-highlight-color: transparent;
+  outline:none;
 }
 
 /* 選択時のリング */
@@ -131,6 +135,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   white-space:nowrap;
   opacity:0;
   pointer-events:none;
+  z-index:9999;
 }
 .color-chip.selected::before{opacity:1}
 
@@ -141,7 +146,8 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 /* タッチ端末の sticky hover 対策 */
 @media (hover: none){
-  .color-chip:hover:not(.selected)::before{opacity:0}
+  .color-chip:hover:not(.selected)::before{opacity:0!important;}
+  .color-chip.selected::before{opacity:1!important;}
   .color-chip::before{top:-38px;bottom:auto}
 }
 
@@ -154,28 +160,32 @@ input,select{padding:8px;font-size:16px;width:300px}
 .color-オレンジ系{background:#f57c00}
 .color-緑系{background:#388e3c}
 .color-パープル系{background:#7b1fa2}
-.color-茶系{background:#8d6e63}
+.color-茶系{background:linear-gradient(135deg,#8d6e63,#6d4c41)}
 .color-グレー系{background:#9e9e9e}
 .color-金系{background:linear-gradient(135deg,#fff6b0,#d4af37,#b08a1e)}
 
-/* ===== 結果 ===== */
+/* ===== 結果ヘッダー（件数のすぐ横にボタン） ===== */
 .result-header{
   display:flex;
   align-items:center;
-  gap:12px;
+  gap:12px; /* 「すぐ横」 */
   margin-top:12px;
 }
 #count{font-weight:bold}
 
+/* ===== 結果 ===== */
 .item{
   border:1px solid #ccc;
   padding:10px;
   margin:10px 0;
   display:flex;
   gap:20px;
+  border-radius:12px
 }
-.item img{width:150px;cursor:pointer}
+.item img{width:150px;cursor:pointer;border-radius:8px}
+.note{font-size:13px;color:#555;margin-top:6px}
 
+/* ===== モーダル ===== */
 #modal{
   display:none;
   position:fixed;
@@ -184,10 +194,16 @@ input,select{padding:8px;font-size:16px;width:300px}
   justify-content:center;
   align-items:center
 }
-#modal img{max-width:90%;border:5px solid #fff}
+#modalImg{max-width:90%;max-height:90%;border:5px solid #fff}
+
+@media(max-width:600px){
+  input,select{width:100%}
+  .category-row select{width:100%}
+  .item{flex-direction:column;align-items:center}
+}
 </style>
 
-<!-- data.js を読み込む -->
+<!-- ✅ data.js 読み込み（必須） -->
 <script src="data.js"></script>
 </head>
 
@@ -241,36 +257,48 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 <div id="result"></div>
 
-<div id="modal"><img></div>
+<div id="modal"><img id="modalImg" alt=""></div>
 
 <script>
 (() => {
-  const el=id=>document.getElementById(id);
+  const el = id => document.getElementById(id);
 
-  const COLORS_MAIN=["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
-  const COLORS_STITCH=[...COLORS_MAIN,"金系"];
-  let paletteOpen=false;
+  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
+  const COLORS_STITCH = [...COLORS_MAIN,"金系"];
 
-  function build(pid,hid,colors){
-    const box=el(pid), hidden=el(hid);
-    box.dataset.selected="[]";
-    colors.forEach(c=>{
-      const d=document.createElement("div");
-      d.className=`color-chip color-${c}`;
-      d.dataset.colorName=c;
-      d.onclick=()=>{
-        let s=JSON.parse(box.dataset.selected);
-        if(d.classList.contains("selected")){
+  let paletteOpen = false;
+
+  function setPaletteOpen(open){
+    paletteOpen = open;
+    ["pMat1","pMat2","pStitch"].forEach(id => el(id).classList.toggle("open", open));
+    el("paletteBtn").textContent = open ? "色パレットを閉じる" : "色パレット";
+  }
+
+  function build(pid, hid, colors){
+    const box = el(pid), hidden = el(hid);
+    box.dataset.selected = "[]";
+
+    colors.forEach(c => {
+      const d = document.createElement("div");
+      d.className = `color-chip color-${c}`;
+      d.dataset.colorName = c;
+
+      d.onclick = () => {
+        let s = JSON.parse(box.dataset.selected);
+
+        if (d.classList.contains("selected")) {
           d.classList.remove("selected");
-          s=s.filter(x=>x!==c);
-        }else{
+          s = s.filter(x => x !== c);
+        } else {
           d.classList.add("selected");
-          s.push(c);
+          s = [...s, c];
         }
-        box.dataset.selected=JSON.stringify(s);
-        hidden.value=s.join(",");
+
+        box.dataset.selected = JSON.stringify(s);
+        hidden.value = s.join(",");
         search();
       };
+
       box.appendChild(d);
     });
   }
@@ -279,71 +307,102 @@ input,select{padding:8px;font-size:16px;width:300px}
   build("pMat2","groupMaterial2",COLORS_MAIN);
   build("pStitch","groupStitch",COLORS_STITCH);
 
-  el("paletteBtn").onclick=()=>{
-    paletteOpen=!paletteOpen;
-    ["pMat1","pMat2","pStitch"].forEach(id=>el(id).classList.toggle("open",paletteOpen));
-    el("paletteBtn").textContent=paletteOpen?"色パレットを閉じる":"色パレット";
-  };
+  // 色パレットボタン：開閉＋文言切替
+  el("paletteBtn").onclick = () => setPaletteOpen(!paletteOpen);
 
-  function filter(hit,key,hid){
-    const v=el(hid).value;
-    if(!v)return hit;
-    return hit.filter(i=>v.split(",").some(c=>i.色グループ?.[key]?.includes(c)));
+  // 色グループ判定（data.js が「配列」でも「文字列」でも動くように）
+  function groupHas(value, c){
+    if (Array.isArray(value)) return value.includes(c);
+    if (typeof value === "string") return value.includes(c);
+    return false;
+  }
+
+  function filter(hit, key, hid){
+    const v = el(hid).value;
+    if(!v) return hit;
+    const selected = v.split(",").filter(Boolean);
+    return hit.filter(i => selected.some(c => groupHas(i.色グループ?.[key], c)));
+  }
+
+  function render(list){
+    el("count").textContent = `検索結果：${list.length} 件`;
+    el("result").innerHTML = list.map(i => `
+      <div class="item">
+        <img src="./images/${i.画像?.[0] || ""}" onclick="openModal('${i.画像?.[0] || ""}')">
+        <div>
+          <b>${i.品番}</b><br>
+          表：${i.色?.素材1 || ""}<br>
+          裏：${i.色?.素材2 || ""}<br>
+          ステッチ：${i.色?.ステッチ || "なし"}
+          ${i.備考 ? `<div class="note">${i.備考}</div>` : ""}
+        </div>
+      </div>
+    `).join("");
   }
 
   function search(){
-    let hit=DATA;
-    if(el("category").value) hit=hit.filter(i=>i.カテゴリ===el("category").value);
-    hit=filter(hit,"素材1","groupMaterial1");
-    hit=filter(hit,"素材2","groupMaterial2");
-    hit=filter(hit,"ステッチ","groupStitch");
+    let hit = DATA;
+
+    if(el("category").value)
+      hit = hit.filter(i => i.カテゴリ === el("category").value);
+
+    hit = filter(hit,"素材1","groupMaterial1");
+    hit = filter(hit,"素材2","groupMaterial2");
+    hit = filter(hit,"ステッチ","groupStitch");
+
     if(el("search").value.trim()){
-      const w=el("search").value.trim();
-      hit=hit.filter(i=>
-        (i.色?.素材1||"").includes(w)||
-        (i.色?.素材2||"").includes(w)||
-        (i.色?.ステッチ||"").includes(w)||
-        (i.備考||"").includes(w)
+      const w = el("search").value.trim();
+      hit = hit.filter(i =>
+        (i.色?.素材1 || "").includes(w) ||
+        (i.色?.素材2 || "").includes(w) ||
+        (i.色?.ステッチ || "").includes(w) ||
+        (i.備考 || "").includes(w)
       );
     }
-    el("count").textContent=`検索結果：${hit.length} 件`;
-    el("result").innerHTML=hit.map(i=>`
-      <div class="item">
-        <img src="./images/${i.画像[0]}" onclick="openModal('${i.画像[0]}')">
-        <div>
-          <b>${i.品番}</b><br>
-          表：${i.色.素材1}<br>
-          裏：${i.色.素材2}<br>
-          ステッチ：${i.色.ステッチ||"なし"}
-        </div>
-      </div>`).join("");
+
+    render(hit);
   }
 
-  el("cancelBtn").onclick=()=>{
-    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id=>el(id).value="");
-    document.querySelectorAll(".palette").forEach(p=>p.dataset.selected="[]");
-    document.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
-    el("search").value="";
-    el("category").value="";
+  // ✅ テキスト入力で検索
+  el("search").oninput = search;
+
+  // ✅ カテゴリ変更：検索を更新＋色パレットを自動で開く
+  el("category").onchange = () => {
+    setPaletteOpen(true);
     search();
   };
 
-  el("clearResultBtn").onclick=()=>{
-    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id=>el(id).value="");
-    document.querySelectorAll(".palette").forEach(p=>p.dataset.selected="[]");
-    document.querySelectorAll(".color-chip").forEach(c=>c.classList.remove("selected"));
-    el("search").value="";
-    el("category").value="";
-    el("result").innerHTML="";
-    el("count").textContent="検索結果：0 件";
+  // キャンセル：条件初期化して全件表示（パレットも閉じる）
+  el("cancelBtn").onclick = () => {
+    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+    document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+    el("search").value = "";
+    el("category").value = "";
+    setPaletteOpen(false);
+    search();
   };
 
-  window.openModal=s=>{
-    el("modal").style.display="flex";
-    el("modal").querySelector("img").src="./images/"+s;
+  // 結果をクリア：条件もパレットも結果も全クリア（パレット閉じる）
+  el("clearResultBtn").onclick = () => {
+    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+    document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+    el("search").value = "";
+    el("category").value = "";
+    setPaletteOpen(false);
+    el("result").innerHTML = "";
+    el("count").textContent = "検索結果：0 件";
   };
-  el("modal").onclick=()=>el("modal").style.display="none";
 
+  // モーダル
+  window.openModal = s => {
+    el("modalImg").src = "./images/" + s;
+    el("modal").style.display = "flex";
+  };
+  el("modal").onclick = () => el("modal").style.display = "none";
+
+  // 初期表示
   search();
 })();
 </script>
