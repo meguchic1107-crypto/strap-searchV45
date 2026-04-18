@@ -29,7 +29,7 @@ body{font-family:sans-serif;padding:20px}
 input,select{padding:8px;font-size:16px;width:300px}
 .search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-/* ✅ 素材カテゴリの横にボタン配置 */
+/* 素材カテゴリ + 色パレットボタン */
 .category-row{
   display:flex;
   gap:10px;
@@ -39,7 +39,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 .category-row select{flex:0 1 300px}
 
 /* ボタン */
-.palette-btn,.cancel-btn{
+.palette-btn,.cancel-btn,.clear-result-btn{
   padding:8px 14px;
   border-radius:999px;
   cursor:pointer
@@ -54,6 +54,12 @@ input,select{padding:8px;font-size:16px;width:300px}
   border:1px solid #999;
   background:#f5f5f5
 }
+/* ✅追加：検索結果クリアボタン（主張しすぎない控えめ） */
+.clear-result-btn{
+  border:1px solid #b0bec5;
+  background:#eceff1;
+  color:#37474f;
+}
 
 /* ===== パレット ===== */
 .palette{
@@ -65,8 +71,6 @@ input,select{padding:8px;font-size:16px;width:300px}
   background:#fafafa;
   border:1px solid #eee;
   border-radius:14px;
-
-  /* ツールチップの見切れ対策 */
   overflow:visible;
   position:relative;
   z-index:1;
@@ -98,7 +102,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   text-align:center;line-height:18px;font-weight:900
 }
 
-/* ===== 色名ガイド ===== */
+/* ===== 色名（ツールチップ） ===== */
 .color-chip::before{
   content:attr(data-color-name);
   position:absolute;
@@ -117,22 +121,18 @@ input,select{padding:8px;font-size:16px;width:300px}
   box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
 
-/* ✅ 選択中は必ず表示（スマホもこれで表示する） */
+/* 選択中は必ず表示 */
 .color-chip.selected::before{opacity:1}
 
-/* ✅ PCなど「本当に hover できる」端末だけ hover を有効化 */
+/* PC等、hover可能端末のみ hover 表示 */
 @media (hover: hover) and (pointer: fine) {
   .color-chip:hover::before{opacity:1}
 }
 
-/* ✅ タッチ端末（iOS Safariなど）の sticky hover 対策
-   - hoverが貼り付いても「未選択なら」文字を出さない
-   - 選択済みは必ず表示（hoverに負けない） */
+/* タッチ端末の sticky hover 対策（未選択hoverだけ消す） */
 @media (hover: none) {
   .color-chip:hover:not(.selected)::before{opacity:0 !important;}
   .color-chip.selected::before{opacity:1 !important;}
-
-  /* スマホは上に出す */
   .color-chip::before{top:-38px;bottom:auto;}
 }
 
@@ -150,6 +150,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 .color-金系{background:linear-gradient(135deg,#fff6b0,#d4af37,#b08a1e)}
 
 /* ===== 結果 ===== */
+#count{margin-top:8px;font-weight:bold}
 .item{
   border:1px solid #ccc;
   padding:10px;
@@ -179,7 +180,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 }
 </style>
 
-<!-- ✅ data.js はこの形で必ず読み込む -->
+<!-- ✅ data.js は必ずこの形で読み込み -->
 <script src="data.js"></script>
 </head>
 
@@ -195,7 +196,6 @@ input,select{padding:8px;font-size:16px;width:300px}
 </div>
 
 <div class="label">素材カテゴリ</div>
-<!-- ✅ 色パレットボタンをカテゴリの横へ -->
 <div class="category-row">
   <select id="category">
     <option value="">指定なし</option>
@@ -205,7 +205,6 @@ input,select{padding:8px;font-size:16px;width:300px}
     <option value="FABRICRUBBER">FABRICRUBBER</option>
     <option value="CAUCHU">CAUCHU</option>
   </select>
-
   <button class="palette-btn" id="paletteBtn">色パレット</button>
 </div>
 
@@ -225,7 +224,9 @@ input,select{padding:8px;font-size:16px;width:300px}
 <div class="label">部分一致検索</div>
 <div class="search-controls">
   <input id="search" placeholder="例：GOLF用、限定、使用不可 など">
-  <button class="cancel-btn" id="cancelBtn">キャンセル</button>
+  <button class="cancel-btn" id="cancelBtn">検索条件をクリア</button>
+  <!-- ✅追加：検索結果だけ消す -->
+  <button class="clear-result-btn" id="clearResultBtn">検索結果をクリア</button>
 </div>
 
 <div id="count"></div>
@@ -251,8 +252,6 @@ input,select{padding:8px;font-size:16px;width:300px}
       const d = document.createElement("div");
       d.className = `color-chip color-${c}`;
       d.dataset.colorName = c;
-
-      // 任意：キーボード操作（PC）
       d.tabIndex = 0;
       d.setAttribute("role","button");
       d.setAttribute("aria-label", c);
@@ -271,7 +270,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 
         box.dataset.selected = JSON.stringify(s);
         hidden.value = s.join(",");
-        search();
+        search(); // 条件変更なので検索は更新
       };
 
       d.addEventListener("click", toggle);
@@ -343,9 +342,16 @@ input,select{padding:8px;font-size:16px;width:300px}
     `).join("");
   }
 
+  // ✅追加：検索結果だけクリア（条件は保持）
+  function clearResults(){
+    el("result").innerHTML = "";
+    el("count").textContent = "検索結果：0 件（表示をクリアしました）";
+  }
+
   el("search").addEventListener("input", search);
   el("category").addEventListener("change", search);
 
+  // 検索条件クリア（既存）
   el("cancelBtn").onclick = () => {
     ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
     document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
@@ -354,20 +360,23 @@ input,select{padding:8px;font-size:16px;width:300px}
     search();
   };
 
+  // ✅検索結果クリアボタン
+  el("clearResultBtn").onclick = clearResults;
+
+  // モーダル
   window.openModal = s => {
     el("modalImg").src = "./images/" + s;
     el("modal").style.display = "flex";
   };
   el("modal").onclick = () => el("modal").style.display = "none";
 
+  // 初期表示
   search();
 })();
 </script>
 
 </body>
 </html>
-
-
 
 
 
