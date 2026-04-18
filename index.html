@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>V45ストラップカラー検索</title>
 
 <style>
@@ -25,15 +25,11 @@ body{font-family:sans-serif;padding:20px}
 
 /* ===== UI ===== */
 .label{font-weight:bold;margin-top:14px}
-.label-note{
-  font-size:12px;
-  color:#666;
-  margin:4px 0 6px 0;
-}
+.label-note{font-size:12px;color:#666;margin:4px 0 6px 0}
 input,select{padding:8px;font-size:16px;width:300px}
 .search-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
-/* ✅ 素材カテゴリ + パレットボタンを横並びに */
+/* ✅ 素材カテゴリの横にボタン配置 */
 .category-row{
   display:flex;
   gap:10px;
@@ -70,7 +66,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   border:1px solid #eee;
   border-radius:14px;
 
-  /* ツールチップが見切れないように */
+  /* ツールチップの見切れ対策 */
   overflow:visible;
   position:relative;
   z-index:1;
@@ -102,50 +98,45 @@ input,select{padding:8px;font-size:16px;width:300px}
   text-align:center;line-height:18px;font-weight:900
 }
 
-/* ===== 色名ガイド（ツールチップ） ===== */
+/* ===== 色名ガイド ===== */
 .color-chip::before{
   content:attr(data-color-name);
   position:absolute;
-
-  /* PCは下に表示 */
   bottom:-30px;
   left:50%;
   transform:translateX(-50%);
-
   background:rgba(0,0,0,.85);
   color:#fff;
   font-size:12px;
   padding:4px 8px;
   border-radius:8px;
   white-space:nowrap;
-
   opacity:0;
   pointer-events:none;
-
   z-index:9999;
   box-shadow:0 6px 16px rgba(0,0,0,.25);
 }
 
-/* ✅「選択中だけ」表示（スマホではこれだけを使う） */
-.color-chip.selected::before{ opacity:1; }
+/* ✅ 選択中は必ず表示（スマホもこれで表示する） */
+.color-chip.selected::before{opacity:1}
 
-/* ✅PCなど、"本当にhoverできる"端末だけ hover を有効化 */
+/* ✅ PCなど「本当に hover できる」端末だけ hover を有効化 */
 @media (hover: hover) and (pointer: fine) {
-  .color-chip:hover::before{ opacity:1; }
+  .color-chip:hover::before{opacity:1}
 }
 
-/* ✅タッチ端末では sticky hover の影響を完全に遮断 */
+/* ✅ タッチ端末（iOS Safariなど）の sticky hover 対策
+   - hoverが貼り付いても「未選択なら」文字を出さない
+   - 選択済みは必ず表示（hoverに負けない） */
 @media (hover: none) {
-  .color-chip:hover::before{ opacity:0 !important; }
+  .color-chip:hover:not(.selected)::before{opacity:0 !important;}
+  .color-chip.selected::before{opacity:1 !important;}
 
-  /* スマホは上に出す（見切れ防止） */
-  .color-chip::before{
-    top:-38px;
-    bottom:auto;
-  }
+  /* スマホは上に出す */
+  .color-chip::before{top:-38px;bottom:auto;}
 }
 
-/* ===== 色コード（全色） ===== */
+/* ===== 色コード ===== */
 .color-黒系{background:#000}
 .color-青系{background:#1976d2}
 .color-白系{background:#fff;border:2px solid #bbb}
@@ -183,11 +174,12 @@ input,select{padding:8px;font-size:16px;width:300px}
 
 @media(max-width:600px){
   input,select{width:100%}
+  .category-row select{width:100%}
   .item{flex-direction:column;align-items:center}
 }
 </style>
 
-<!-- DATA を読み込む（DATA 配列がここで定義されている前提） -->
+<!-- ✅ data.js はこの形で必ず読み込む -->
 <script src="data.js"></script>
 </head>
 
@@ -203,7 +195,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 </div>
 
 <div class="label">素材カテゴリ</div>
-<!-- ✅ ボタンを素材カテゴリの横に移動 -->
+<!-- ✅ 色パレットボタンをカテゴリの横へ -->
 <div class="category-row">
   <select id="category">
     <option value="">指定なし</option>
@@ -260,7 +252,7 @@ input,select{padding:8px;font-size:16px;width:300px}
       d.className = `color-chip color-${c}`;
       d.dataset.colorName = c;
 
-      // 任意：アクセシビリティ（PCでTab移動できる）
+      // 任意：キーボード操作（PC）
       d.tabIndex = 0;
       d.setAttribute("role","button");
       d.setAttribute("aria-label", c);
@@ -270,11 +262,9 @@ input,select{padding:8px;font-size:16px;width:300px}
         const isSelected = s.includes(c);
 
         if(isSelected){
-          // ✅解除：selectedを外す → 文字も消える（スマホでも確実）
           s = s.filter(x => x !== c);
           d.classList.remove("selected");
         }else{
-          // ✅選択：selectedを付ける → 文字が出る
           s = [...s, c];
           d.classList.add("selected");
         }
@@ -300,7 +290,7 @@ input,select{padding:8px;font-size:16px;width:300px}
   build("pMat2","groupMaterial2",COLORS_MAIN);
   build("pStitch","groupStitch",COLORS_STITCH);
 
-  /* パレット開閉 */
+  // パレット開閉
   const pals = ["pMat1","pMat2","pStitch"].map(el);
   const paletteBtn = el("paletteBtn");
   paletteBtn.onclick = () => {
@@ -357,16 +347,10 @@ input,select{padding:8px;font-size:16px;width:300px}
   el("category").addEventListener("change", search);
 
   el("cancelBtn").onclick = () => {
-    // hidden値クリア
     ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-
-    // 選択状態クリア
     document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
     document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
-
-    // テキスト検索クリア
     el("search").value = "";
-
     search();
   };
 
