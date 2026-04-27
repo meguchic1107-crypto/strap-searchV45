@@ -2824,7 +2824,7 @@ var DATA = [
     "画像": [
       "FM FABRICRUBBER V45 緑(明)×茶カーフ×緑ステッチ 024.png"
     ]
-  }
+  },
   {
     "品番": "FM CROCORUBBER V45",
     "カテゴリ": "CROCORUBBER",
