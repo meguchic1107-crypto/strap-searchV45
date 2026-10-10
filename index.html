@@ -357,9 +357,10 @@ input,select{padding:8px;font-size:16px;width:300px}
 if(el("size").value){
   const size = el("size").value;
 
-  hit = hit.filter(i =>
-    (i.品番 || "").includes(size)
-  );
+  hit = hit.filter(i => {
+    const parts = (i.品番 || "").trim().split(/\s+/);
+    return parts.includes(size);
+  });
 }
     hit = filter(hit,"素材1","groupMaterial1");
     hit = filter(hit,"素材2","groupMaterial2");
