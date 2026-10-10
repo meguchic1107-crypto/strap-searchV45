@@ -378,11 +378,437 @@ if(el("size").value){
   el("search").oninput = search;
 
   // ✅ カテゴリ変更：検索を更新＋色パレットを自動で開く
+  <!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V45ストラップカラー検索</title>
+
+<style>
+body{font-family:sans-serif;padding:20px}
+.title{text-align:center;white-space:nowrap}
+.title::before,.title::after{content:"★";color:#d4af37;margin:0 8px}
+
+/* ===== 注意書き ===== */
+.notice{
+  margin:10px 0 20px;
+  padding:12px;
+  border:1px solid #1e88e5;
+  background:#e3f2fd;
+  color:#1565c0;
+  border-radius:8px;
+  font-size:14px;
+  line-height:1.6
+}
+.notice-sub{padding-left:2em}
+
+/* ===== UI ===== */
+.label{font-weight:bold;margin-top:14px}
+.label-note{font-size:12px;color:#666;margin:4px 0 6px 0}
+input,select{padding:8px;font-size:16px;width:300px}
+
+.search-controls,
+.category-row{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center
+}
+.category-row select{flex:0 1 300px}
+
+/* ===== ボタン ===== */
+.palette-btn,.cancel-btn,.clear-result-btn{
+  padding:8px 14px;
+  border-radius:999px;
+  cursor:pointer
+}
+.palette-btn{
+  border:1px solid #90caf9;
+  background:linear-gradient(#e3f2fd,#bbdefb);
+  color:#0d47a1;
+  font-weight:bold
+}
+.cancel-btn{border:1px solid #999;background:#f5f5f5}
+.clear-result-btn{border:1px solid #b0bec5;background:#eceff1;color:#37474f}
+
+/* ===== パレット ===== */
+.palette{
+  display:none;
+  flex-wrap:wrap;
+  gap:10px;
+  margin:8px 0 16px;
+  padding:12px;
+  background:#fafafa;
+  border:1px solid #eee;
+  border-radius:14px;
+  overflow:visible; /* ツールチップ見切れ防止 */
+}
+.palette.open{display:flex}
+
+/* ===== 色チップ ===== */
+.color-chip{
+  width:32px;height:32px;border-radius:50%;
+  position:relative;
+  cursor:pointer;
+  border:2px solid rgba(0,0,0,.1);
+  box-shadow:
+    0 4px 10px rgba(0,0,0,.15),
+    inset 0 1px 0 rgba(255,255,255,.6);
+  -webkit-tap-highlight-color: transparent;
+  outline:none;
+}
+
+/* 選択時のリング */
+.color-chip.selected{
+  box-shadow:
+    0 6px 16px rgba(30,136,229,.25),
+    0 0 0 4px rgba(30,136,229,.25);
+}
+
+/* ✅ チェックマーク（丸なし） */
+.color-chip.selected::after{
+  content:"✓";
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  font-weight:900;
+  line-height:1;
+  pointer-events:none;
+}
+
+/* ✅ 濃色 → 白いチェック */
+.color-黒系.selected::after,
+.color-青系.selected::after,
+.color-赤系.selected::after,
+.color-緑系.selected::after,
+.color-パープル系.selected::after,
+.color-茶系.selected::after,
+.color-グレー系.selected::after{
+  color:#fff;
+  text-shadow:0 1px 2px rgba(0,0,0,.6);
+}
+
+/* ✅ 淡色 → 黒いチェック */
+.color-白系.selected::after,
+.color-黄系.selected::after,
+.color-金系.selected::after,
+.color-パステルピンク.selected::after{
+  color:#111;
+  text-shadow:0 1px 2px rgba(255,255,255,.6);
+}
+
+/* ===== 色名ツールチップ ===== */
+.color-chip::before{
+  content:attr(data-color-name);
+  position:absolute;
+  bottom:-30px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.85);
+  color:#fff;
+  font-size:12px;
+  padding:4px 8px;
+  border-radius:8px;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  z-index:9999;
+}
+.color-chip.selected::before{opacity:1}
+
+/* hover が使える端末のみ */
+@media (hover: hover) and (pointer: fine){
+  .color-chip:hover::before{opacity:1}
+}
+
+/* タッチ端末の sticky hover 対策 */
+@media (hover: none){
+  .color-chip:hover:not(.selected)::before{opacity:0!important;}
+  .color-chip.selected::before{opacity:1!important;}
+  .color-chip::before{top:-38px;bottom:auto}
+}
+
+/* ===== 色 ===== */
+.color-黒系{background:#000}
+.color-青系{background:#1976d2}
+.color-白系{background:#fff}
+.color-黄系{background:#fdd835}
+.color-赤系{background:#d32f2f}
+.color-オレンジ系{background:#f57c00}
+.color-緑系{background:#388e3c}
+.color-パープル系{background:#7b1fa2}
+.color-茶系{background:linear-gradient(135deg,#8d6e63,#6d4c41)}
+.color-グレー系{background:#9e9e9e}
+.color-金系{background:linear-gradient(135deg,#fff6b0,#d4af37,#b08a1e)}
+ .color-パステルピンク{background:#f8bbd0;} 
+
+/* ===== 結果ヘッダー（件数のすぐ横にボタン） ===== */
+.result-header{
+  display:flex;
+  align-items:center;
+  gap:12px; /* 「すぐ横」 */
+  margin-top:12px;
+}
+#count{font-weight:bold}
+
+/* ===== 結果 ===== */
+.item{
+  border:1px solid #ccc;
+  padding:10px;
+  margin:10px 0;
+  display:flex;
+  gap:20px;
+  border-radius:12px
+}
+.item img{width:150px;cursor:pointer;border-radius:8px}
+.note{font-size:13px;color:#555;margin-top:6px}
+
+/* ===== モーダル ===== */
+#modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.7);
+  justify-content:center;
+  align-items:center
+}
+#modalImg{max-width:90%;max-height:90%;border:5px solid #fff}
+
+@media(max-width:600px){
+  input,select{width:100%}
+  .category-row select{width:100%}
+  .item{flex-direction:column;align-items:center}
+}
+</style>
+
+<!-- ✅ data.js 読み込み（必須） -->
+<script src="data.js"></script>
+</head>
+
+<body>
+
+<h1 class="title">V45ストラップカラー検索</h1>
+
+<div class="notice">
+  <div>今まで入荷してきたベルト（在庫外含む）の色を検索できます。</div>
+  <div class="notice-sub">注1：特注は除く</div>
+  <div class="notice-sub">注2：すでに在庫のないカラーがあります</div>
+  <div class="notice-sub">注3：色見本として参考にしてください</div>
+</div>
+
+<div class="label">素材カテゴリ</div>
+<div class="category-row">
+  <select id="category">
+    <option value="">指定なし</option>
+    <option value="CROCORUBBER">CROCORUBBER</option>
+    <option value="CALFRUBBER">CALFRUBBER</option>
+    <option value="SUEDERUBBER">SUEDERUBBER</option>
+    <option value="FABRICRUBBER">FABRICRUBBER</option>
+    <option value="CAUCHU">CAUCHU</option>
+  </select>
+  <button class="palette-btn" id="paletteBtn">色パレット</button>
+</div>
+
+<div class="label">素材1（表）</div>
+<div class="palette" id="pMat1"></div>
+<input type="hidden" id="groupMaterial1">
+
+<div class="label">素材2（裏）</div>
+<div class="label-note">※裏の素材（茶カーフ）含む</div>
+<div class="palette" id="pMat2"></div>
+<input type="hidden" id="groupMaterial2">
+
+<div class="label">ステッチ</div>
+<div class="palette" id="pStitch"></div>
+<input type="hidden" id="groupStitch">
+
+<div class="label">部分一致検索</div>
+<div class="search-controls">
+  <input id="search" placeholder="例：GOLF用、限定、使用不可 など">
+  <button class="cancel-btn" id="cancelBtn">キャンセル</button>
+</div>
+
+<div class="result-header">
+  <div id="count"></div>
+  <button class="clear-result-btn" id="clearResultBtn">結果をクリア</button>
+</div>
+
+<div id="result"></div>
+
+<div id="modal"><img id="modalImg" alt=""></div>
+
+<script>
+(() => {
+  const el = id => document.getElementById(id);
+
+  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系","パステルピンク"];
+  const COLORS_STITCH = [...COLORS_MAIN,"金系"];
+
+  let paletteOpen = false;
+
+  function setPaletteOpen(open){
+    paletteOpen = open;
+    ["pMat1","pMat2","pStitch"].forEach(id => el(id).classList.toggle("open", open));
+    el("paletteBtn").textContent = open ? "色パレットを閉じる" : "色パレット";
+  }
+
+  function build(pid, hid, colors){
+    const box = el(pid), hidden = el(hid);
+    box.dataset.selected = "[]";
+
+    colors.forEach(c => {
+      const d = document.createElement("div");
+      d.className = `color-chip color-${c}`;
+      d.dataset.colorName = c;
+
+      d.onclick = () => {
+        let s = JSON.parse(box.dataset.selected);
+
+        if (d.classList.contains("selected")) {
+          d.classList.remove("selected");
+          s = s.filter(x => x !== c);
+        } else {
+          d.classList.add("selected");
+          s = [...s, c];
+        }
+
+        box.dataset.selected = JSON.stringify(s);
+        hidden.value = s.join(",");
+        search();
+      };
+
+      box.appendChild(d);
+    });
+  }
+
+  build("pMat1","groupMaterial1",COLORS_MAIN);
+  build("pMat2","groupMaterial2",COLORS_MAIN);
+  build("pStitch","groupStitch",COLORS_STITCH);
+
+  // 色パレットボタン：開閉＋文言切替
+  el("paletteBtn").onclick = () => setPaletteOpen(!paletteOpen);
+
+  // 色グループ判定（data.js が「配列」でも「文字列」でも動くように）
+  function groupHas(value, c){
+    if (Array.isArray(value)) return value.includes(c);
+    if (typeof value === "string") return value.includes(c);
+    return false;
+  }
+
+  function filter(hit, key, hid){
+    const v = el(hid).value;
+    if(!v) return hit;
+    const selected = v.split(",").filter(Boolean);
+    return hit.filter(i => selected.some(c => groupHas(i.色グループ?.[key], c)));
+  }
+
+  function render(list){
+    el("count").textContent = `検索結果：${list.length} 件`;
+    el("result").innerHTML = list.map(i => `
+      <div class="item">
+        <img src="./images/${i.画像?.[0] || ""}" onclick="openModal('${i.画像?.[0] || ""}')">
+        <div>
+          <b>${i.品番}</b><br>
+          表：${i.色?.素材1 || ""}<br>
+          裏：${i.色?.素材2 || ""}<br>
+          ステッチ：${i.色?.ステッチ || "なし"}
+          ${i.備考 ? `<div class="note">${i.備考}</div>` : ""}
+        </div>
+      </div>
+    `).join("");
+  }
+
+  function search(){
+    let hit = DATA;
+
+    if(el("category").value)
+      hit = hit.filter(i => i.カテゴリ === el("category").value);
+// サイズ検索
+if(el("size").value){
+  const size = el("size").value;
+
+  hit = hit.filter(i => {
+    const parts = (i.品番 || "").trim().split(/\s+/);
+    const lastPart = parts[parts.length - 1];
+    return lastPart === size;
+  });
+}
+    hit = filter(hit,"素材1","groupMaterial1");
+    hit = filter(hit,"素材2","groupMaterial2");
+    hit = filter(hit,"ステッチ","groupStitch");
+
+    if(el("search").value.trim()){
+      const w = el("search").value.trim();
+      hit = hit.filter(i =>
+        (i.色?.素材1 || "").includes(w) ||
+        (i.色?.素材2 || "").includes(w) ||
+        (i.色?.ステッチ || "").includes(w) ||
+        (i.備考 || "").includes(w)
+      );
+    }
+
+    render(hit);
+  }
+
+  // ✅ テキスト入力で検索
+  el("search").oninput = search;
+
+  // ✅ カテゴリ変更：検索を更新＋色パレットを自動で開く
   el("category").onchange = () => {
-    setPaletteOpen(true);
-    search();
-  };
+  setPaletteOpen(true);
+  search();
+};
+
+el("size").onchange = search;
+
+  // キャンセル：条件初期化して全件表示（パレットも閉じる）
+  el("cancelBtn").onclick = () => {
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+
+  el("search").value = "";
+  el("category").value = "";
   el("size").value = "";
+
+  setPaletteOpen(false);
+  search();
+};
+
+  // 結果をクリア：条件もパレットも結果も全クリア（パレット閉じる）
+  el("clearResultBtn").onclick = () => {
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+
+  el("search").value = "";
+  el("category").value = "";
+  el("size").value = "";
+
+  setPaletteOpen(false);
+
+  el("result").innerHTML = "";
+  el("count").textContent = "検索結果：0 件";
+};
+
+  // モーダル
+  window.openModal = s => {
+    el("modalImg").src = "./images/" + s;
+    el("modal").style.display = "flex";
+  };
+  el("modal").onclick = () => el("modal").style.display = "none";
+
+  // 初期表示
+  search();
+})();
+</script>
+
+</body>
+</html>
   // キャンセル：条件初期化して全件表示（パレットも閉じる）
   el("cancelBtn").onclick = () => {
   ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
