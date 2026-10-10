@@ -387,17 +387,24 @@ el("size").onchange = search;
 
 // ✅ キャンセル
 el("cancelBtn").onclick = () => {
-  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
 
-  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
-  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+  ["groupMaterial1","groupMaterial2","groupStitch"]
+    .forEach(id => el(id).value = "");
+
+  document.querySelectorAll(".palette")
+    .forEach(p => p.dataset.selected = "[]");
+
+  document.querySelectorAll(".color-chip")
+    .forEach(c => c.classList.remove("selected"));
 
   el("search").value = "";
   el("category").value = "";
   el("size").value = "";
 
   setPaletteOpen(false);
+
   search();
+
 };
 
 // ✅ 結果クリア
