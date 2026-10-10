@@ -117,6 +117,8 @@ input,select{padding:8px;font-size:16px;width:300px}
 .color-黄系.selected::after,
 .color-金系.selected::after{
   color:#111;
+.color-パステルピンク.selected::after{
+  color:#111;
   text-shadow:0 1px 2px rgba(255,255,255,.6);
 }
 
@@ -163,6 +165,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 .color-茶系{background:linear-gradient(135deg,#8d6e63,#6d4c41)}
 .color-グレー系{background:#9e9e9e}
 .color-金系{background:linear-gradient(135deg,#fff6b0,#d4af37,#b08a1e)}
+ .color-パステルピンク{background:#f8bbd0;} 
 
 /* ===== 結果ヘッダー（件数のすぐ横にボタン） ===== */
 .result-header{
@@ -263,7 +266,7 @@ input,select{padding:8px;font-size:16px;width:300px}
 (() => {
   const el = id => document.getElementById(id);
 
-  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系"];
+  const COLORS_MAIN = ["黒系","青系","白系","黄系","赤系","オレンジ系","緑系","パープル系","茶系","グレー系","パステルピンク"];
   const COLORS_STITCH = [...COLORS_MAIN,"金系"];
 
   let paletteOpen = false;
