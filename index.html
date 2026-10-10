@@ -375,26 +375,37 @@ if(el("size").value){
   }
 
   // ✅ テキスト入力で検索
-  el("search").oninput = search;
+el("search").oninput = search;
 
-  // ✅ カテゴリ変更：検索を更新＋色パレットを自動で開く
-  el("category").onchange = () => {
+// ✅ カテゴリ変更
+el("category").onchange = () => {
   setPaletteOpen(true);
   search();
 };
+
 el("size").onchange = search;
 
-// キャンセル
+// ✅ キャンセル
 el("cancelBtn").onclick = () => {
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
 
-  ["groupMaterial1","groupMaterial2","groupStitch"]
-    .forEach(id => el(id).value = "");
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
 
-  document.querySelectorAll(".palette")
-    .forEach(p => p.dataset.selected = "[]");
+  el("search").value = "";
+  el("category").value = "";
+  el("size").value = "";
 
-  document.querySelectorAll(".color-chip")
-    .forEach(c => c.classList.remove("selected"));
+  setPaletteOpen(false);
+  search();
+};
+
+// ✅ 結果クリア
+el("clearResultBtn").onclick = () => {
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
 
   el("search").value = "";
   el("category").value = "";
@@ -402,9 +413,28 @@ el("cancelBtn").onclick = () => {
 
   setPaletteOpen(false);
 
-  search();
+  el("result").innerHTML = "";
+  el("count").textContent = "検索結果：0 件";
 };
 
+// ✅ モーダル
+window.openModal = s => {
+  el("modalImg").src = "./images/" + s;
+  el("modal").style.display = "flex";
+};
+
+el("modal").onclick = () => {
+  el("modal").style.display = "none";
+};
+
+// ✅ 初期表示
+search();
+
+})();
+</script>
+
+</body>
+</html>
 
 /* ===== 注意書き ===== */
 .notice{
