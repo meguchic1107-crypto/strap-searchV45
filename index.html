@@ -840,20 +840,7 @@ el("size").onchange = search;
 
 </body>
 </html>
-  // キャンセル：条件初期化して全件表示（パレットも閉じる）
-  el("cancelBtn").onclick = () => {
-  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
-  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
-
-  el("search").value = "";
-  el("category").value = "";
-  el("size").value = "";
-
-  setPaletteOpen(false);
-  search();
-};
-
+  
   // 結果をクリア：条件もパレットも結果も全クリア（パレット閉じる）
   el("clearResultBtn").onclick = () => {
   ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
