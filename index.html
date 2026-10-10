@@ -378,12 +378,15 @@ if(el("size").value){
   el("search").oninput = search;
 
   // ✅ カテゴリ変更：検索を更新＋色パレットを自動で開く
-  <!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>V45ストラップカラー検索</title>
+  el("category").onchange = () => {
+  setPaletteOpen(true);
+  search();
+};
+
+el("size").onchange = search;
+
+// キャンセル
+el("cancelBtn").onclick = () => {
 
 <style>
 body{font-family:sans-serif;padding:20px}
