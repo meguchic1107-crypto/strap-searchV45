@@ -810,37 +810,7 @@ if(el("size").value){
 };
 
 el("size").onchange = search;
-// 結果をクリア：条件もパレットも結果も全クリア（パレット閉じる）
-  el("clearResultBtn").onclick = () => {
-  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
-  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
-
-  el("search").value = "";
-  el("category").value = "";
-  el("size").value = "";
-
-  setPaletteOpen(false);
-
-  el("result").innerHTML = "";
-  el("count").textContent = "検索結果：0 件";
-};
-
-  // モーダル
-  window.openModal = s => {
-    el("modalImg").src = "./images/" + s;
-    el("modal").style.display = "flex";
-  };
-  el("modal").onclick = () => el("modal").style.display = "none";
-
-  // 初期表示
-  search();
-})();
-</script>
-
-</body>
-</html>
-  // モーダル
+ // モーダル
   window.openModal = s => {
     el("modalImg").src = "./images/" + s;
     el("modal").style.display = "flex";
