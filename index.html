@@ -357,11 +357,9 @@ input,select{padding:8px;font-size:16px;width:300px}
 if(el("size").value){
   const size = el("size").value;
 
-  hit = hit.filter(i => {
-    const parts = (i.品番 || "").trim().split(/\s+/);
-    const lastPart = parts[parts.length - 1];
-    return lastPart === size;
-  });
+  hit = hit.filter(i =>
+    (i.品番 || "").includes(size)
+  );
 }
     hit = filter(hit,"素材1","groupMaterial1");
     hit = filter(hit,"素材2","groupMaterial2");
@@ -388,7 +386,7 @@ el("category").onchange = () => {
   setPaletteOpen(true);
   search();
 };
-
+// ✅ サイズ検索
 el("size").onchange = search;
 
 // ✅ キャンセル
