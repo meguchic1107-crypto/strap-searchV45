@@ -382,10 +382,29 @@ if(el("size").value){
   setPaletteOpen(true);
   search();
 };
+el("size").onchange = search;
 
-body{font-family:sans-serif;padding:20px}
-.title{text-align:center;white-space:nowrap}
-.title::before,.title::after{content:"★";color:#d4af37;margin:0 8px}
+// キャンセル
+el("cancelBtn").onclick = () => {
+
+  ["groupMaterial1","groupMaterial2","groupStitch"]
+    .forEach(id => el(id).value = "");
+
+  document.querySelectorAll(".palette")
+    .forEach(p => p.dataset.selected = "[]");
+
+  document.querySelectorAll(".color-chip")
+    .forEach(c => c.classList.remove("selected"));
+
+  el("search").value = "";
+  el("category").value = "";
+  el("size").value = "";
+
+  setPaletteOpen(false);
+
+  search();
+};
+
 
 /* ===== 注意書き ===== */
 .notice{
