@@ -382,29 +382,36 @@ if(el("size").value){
     setPaletteOpen(true);
     search();
   };
-
+  el("size").value = "";
   // キャンセル：条件初期化して全件表示（パレットも閉じる）
   el("cancelBtn").onclick = () => {
-    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-    document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
-    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
-    el("search").value = "";
-    el("category").value = "";
-    setPaletteOpen(false);
-    search();
-  };
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+
+  el("search").value = "";
+  el("category").value = "";
+  el("size").value = "";
+
+  setPaletteOpen(false);
+  search();
+};
 
   // 結果をクリア：条件もパレットも結果も全クリア（パレット閉じる）
   el("clearResultBtn").onclick = () => {
-    ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
-    document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
-    document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
-    el("search").value = "";
-    el("category").value = "";
-    setPaletteOpen(false);
-    el("result").innerHTML = "";
-    el("count").textContent = "検索結果：0 件";
-  };
+  ["groupMaterial1","groupMaterial2","groupStitch"].forEach(id => el(id).value = "");
+  document.querySelectorAll(".palette").forEach(p => p.dataset.selected = "[]");
+  document.querySelectorAll(".color-chip").forEach(c => c.classList.remove("selected"));
+
+  el("search").value = "";
+  el("category").value = "";
+  el("size").value = "";
+
+  setPaletteOpen(false);
+
+  el("result").innerHTML = "";
+  el("count").textContent = "検索結果：0 件";
+};
 
   // モーダル
   window.openModal = s => {
