@@ -3696,5 +3696,3 @@ var DATA = [
   },
 
 ];
-
-module.exports = { DATA };
