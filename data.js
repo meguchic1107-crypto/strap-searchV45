@@ -3660,7 +3660,7 @@ var DATA = [
   },
 {
     "品番": "FM CALFRUBBER V41",
-    "カテゴリ": "CALFRUBEER",
+    "カテゴリ": "CALFRUBBER",
     "色": {
       "素材1": "黒マット",
       "素材2": "黒ラバー",
@@ -3678,7 +3678,7 @@ var DATA = [
   },
 {
     "品番": "FM CALFRUBBER V41",
-    "カテゴリ": "CALFRUBEER",
+    "カテゴリ": "CALFRUBBER",
     "色": {
       "素材1": "グレージュマット",
       "素材2": "グレージュラバー",
