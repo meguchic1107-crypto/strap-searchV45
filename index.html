@@ -359,7 +359,7 @@ if(el("size").value){
 
   hit = hit.filter(i => {
     const parts = (i.品番 || "").trim().split(/\s+/);
-    return parts.includes(size);
+    return parts[parts.length - 1] === size;
   });
 }
     hit = filter(hit,"素材1","groupMaterial1");
