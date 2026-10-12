@@ -64,19 +64,10 @@ input,select{padding:8px;font-size:16px;width:300px}
   width:32px;
   height:32px;
   border-radius:50%;
-  overflow:hidden; /* ←追加 */
+  overflow:hidden;
   position:relative;
   cursor:pointer;
-
-  border:2px solid rgba(0,0,0,.15);
-
-  box-shadow:
-    0 4px 10px rgba(0,0,0,.15),
-    inset 0 1px 0 rgba(255,255,255,.6);
-
-  -webkit-tap-highlight-color: transparent;
-  outline:none;
-}
+border:1px solid rgba(0,0,0,.25);box-shadow:0 4px 10px rgba(0,0,0,.15),inset 0 1px 0 rgba(255,255,255,.6);box-sizing:border-box;-webkit-tap-highlight-color: transparent;outline:none;}
 /* 選択時のリング */
 .color-chip.selected{
   box-shadow:
