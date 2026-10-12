@@ -3583,7 +3583,7 @@ var DATA = [
     },
     "備考": "",
     "画像": [
-      "FM CROCORUBBER V41 パープルマット×黒マット×黄ステッチ.png"
+      "FM CROCORUBBER V41 パープルマット×黒ラバー×黄ステッチ.png"
     ]
   },
 {
