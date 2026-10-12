@@ -3821,8 +3821,8 @@ var DATA = [
     ]
   },
   {
-    "品番": "FM CROCOCRUBBER V41",
-    "カテゴリ": "CROCOCRUBBER",
+    "品番": "FM CROCORUBBER V41",
+    "カテゴリ": "CROCORUBBER",
     "色": {
       "素材1": "オレンジマット",
       "素材2": "オレンジラバー",
